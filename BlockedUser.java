@@ -8,4 +8,6 @@ public class BlockedUser  {
     }
 
     // Getters and Setters
+    public long getBlockerId() { return blockerId; }
+    public long getBlockedId() { return blockedId; }
 }
