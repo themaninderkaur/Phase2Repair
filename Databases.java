@@ -21,7 +21,7 @@ class User {
     }
 
     // Getters and Setters
-    public long getUser Id() { return userId; }
+    public long getUserID() { return userId; }
     public String getUsername() { return username; }
     public String getPassword() { return password; }
     public String getEmail() { return email; }
@@ -44,7 +44,7 @@ class Friend {
     }
 
     // Getters and Setters
-    public long getUser Id() { return userId; }
+    public long getUserID() { return userId; }
     public long getFriendId() { return friendId; }
     public String getStatus() { return status; }
     public Date getCreatedAt() { return createdAt; }
