@@ -20,4 +20,12 @@ public class Message {
     }
 
     // Getters and Setters
+    public long getMessageId() { return messageId; }
+    public long getSenderId() { return senderId; }
+    public long getReceiverId() { return receiverId; }
+    public String getContent() { return content; }
+    public String getPhotoUrl() { return photoUrl; }
+    public Date getCreatedAt() { return createdAt; }
+    public boolean isRead() { return isRead; }
+    public void setRead(boolean isRead) { this.isRead = isRead; }
 }
