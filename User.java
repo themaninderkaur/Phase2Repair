@@ -20,4 +20,11 @@ public class User {
     }
 
     // Getters and Setters
+    public long getUserId() { return userId; }
+    public String getUsername() { return username; }
+    public String getPassword() { return password; }
+    public String getEmail() { return email; }
+    public String getProfilePictureUrl() { return profilePictureUrl; }
+    public String getBio() { return bio; }
+    public Date getCreatedAt() { return createdAt; }
 }
