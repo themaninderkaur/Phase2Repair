@@ -9,6 +9,12 @@ public class User {
     private String bio;
     private Date createdAt;
 
+    private ArrayList<String> userBlockedList;
+    private ArrayList<String> userFriendsList;
+    
+
+    
+    
     public User(long userId, String username, String password, String email, String profilePictureUrl, String bio) {
         this.userId = userId;
         this.username = username;
@@ -17,6 +23,8 @@ public class User {
         this.profilePictureUrl = profilePictureUrl;
         this.bio = bio;
         this.createdAt = new Date(); // Set to current date
+        this.userBlockedList = new userBlockedList<>();
+        this.userFriendsList = new userFriendsList<>();
     }
 
     // Getters and Setters
@@ -27,4 +35,7 @@ public class User {
     public String getProfilePictureUrl() { return profilePictureUrl; }
     public String getBio() { return bio; }
     public Date getCreatedAt() { return createdAt; }
+    public ArrayList<String> getBlockedList() { return userBlockedList; }
+    public ArrayList<String> getFriendsList() { return userFriendsList; }
+    
 }
