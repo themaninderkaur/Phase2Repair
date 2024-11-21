@@ -14,7 +14,7 @@ public class Friends {
     }
 
     // Getters and Setters
-    public long getUser Id() { return userId; }
+    public long getUserId() { return userId; }
     public long getFriendId() { return friendId; }
     public String getStatus() { return status; }
     public Date getCreatedAt() { return createdAt; }

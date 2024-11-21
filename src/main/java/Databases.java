@@ -2,7 +2,7 @@ import java.util.ArrayList;
 
 public class Databases {
     private ArrayList<User> users;
-    private ArrayList<Friend> friends;
+    private ArrayList<Friends> friends;
     private ArrayList<Message> messages;
     private ArrayList<BlockedUser > blockedUsers;
 
@@ -18,7 +18,7 @@ public class Databases {
         users.add(user);
     }
 
-    public void addFriend(Friend friend) {
+    public void addFriend(Friends friend) {
         friends.add(friend);
     }
 
@@ -35,7 +35,7 @@ public class Databases {
         return users;
     }
 
-    public ArrayList<Friend> getFriends() {
+    public ArrayList<Friends> getFriends() {
         return friends;
     }
 
