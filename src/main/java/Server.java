@@ -1,13 +1,11 @@
 import java.util.ArrayList;
 import java.io.*;
 import java.net.*;
-
-public class Server implement Runnable {
-    private ArrayList<User> userList = new ArrayList<User>();
-}
-public class EchoServer implements Runnable {
+ 
+public class Server implements Runnable {
     private Socket socket;
-
+    private ArrayList<User> userList = new ArrayList<User>();
+    
     public Server (Socket socket) {
         this.socket = socket;
     }
