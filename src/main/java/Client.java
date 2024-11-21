@@ -1,7 +1,7 @@
 import java.io.*;
 import java.net.*;
 
-public class EchoClient {
+public class Client {
     public static void main(String[] args) throws IOException {
         Socket socket = new Socket("localhost", 4343);  // Connect to the server
         BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
