@@ -1,4 +1,5 @@
 import java.util.Date;
+import java.util.ArrayList;
 
 public class User {
     private long userId;
@@ -23,8 +24,13 @@ public class User {
         this.profilePictureUrl = profilePictureUrl;
         this.bio = bio;
         this.createdAt = new Date(); // Set to current date
-        this.userBlockedList = new userBlockedList<>();
-        this.userFriendsList = new userFriendsList<>();
+        this.userBlockedList = new ArrayList<String>();
+        this.userFriendsList = new ArrayList<String>();
+    }
+
+    public User(String username, String password) {
+        this.username = username;
+        this.password = password;
     }
 
     // Getters and Setters
