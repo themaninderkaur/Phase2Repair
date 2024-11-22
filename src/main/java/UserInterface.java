@@ -112,4 +112,23 @@ public interface UserInterface {
 
         System.out.println("Blocked Users: " + currentUser.getBlockedList());
     }
+
+    default String showUsers(ArrayList<User> users) {
+        String results = "";
+
+        for (User u : users) {
+            results += "+ " + u.getUsername();
+        }
+
+        return results.substring(2);
+    } 
+
+    default boolean findUser(String username, ArrayList<User> users) {
+        for (User u : users) {
+            if (u.getUsername() == username) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
