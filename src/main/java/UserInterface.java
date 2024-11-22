@@ -1,3 +1,7 @@
+package src.main.java;
+
+import src.main.java.User;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Scanner;
@@ -107,7 +111,7 @@ public interface UserInterface {
         System.out.println("Failed to add friend. User not found or is blocked.");
     }
 
-    default void blockUser(User currentUser, ArrayList<User> users) {
+    static void blockUser(User currentUser, ArrayList<User> users) {
         if (currentUser == null) {
             System.out.println("No user is logged in.");
             return;
@@ -239,8 +243,8 @@ public interface UserInterface {
         }
     }
 
-    default boolean deleteMessage(User sender, User recipient, String message, ArrayList<ArrayList<String>> allMessages, 
-    ArrayList<User> users) {
+    default boolean deleteMessage(User sender, User recipient, String message, ArrayList<ArrayList<String>> allMessages,
+                                  ArrayList<User> users) {
         if (allMessages.size() == 0) {
             return false;
         } else if (!findUser(sender.getUsername(), users) || !findUser(recipient.getUsername(),users)) {
@@ -256,4 +260,42 @@ public interface UserInterface {
             return false;
         }
     }
+
+    static void blockUser(User currentUser, String username) {
+        if (currentUser  != null) {
+            currentUser.blockUser(username);
+            System.out.println(username + " has been blocked.");
+        } else {
+            System.out.println("No user is logged in.");
+        }
+    }
+
+
+    default void unblockUser (User currentUser , String username) {
+        if (currentUser  != null) {
+            currentUser .unblockUser (username);
+            System.out.println(username + " has been unblocked.");
+        } else {
+            System.out.println("No user is logged in.");
+        }
+    }
+
+    default void addFriend(User currentUser , String friendUsername) {
+        if (currentUser  != null) {
+            currentUser .addFriend(friendUsername);
+            System.out.println(friendUsername + " has been added as a friend.");
+        } else {
+            System.out.println("No user is logged in.");
+        }
+    }
+
+    default void removeFriend(User currentUser , String friendUsername) {
+        if (currentUser  != null) {
+            currentUser .removeFriend(friendUsername);
+            System.out.println(friendUsername + " has been removed from friends.");
+        } else {
+            System.out.println("No user is logged in.");
+        }
+    }
+
 }

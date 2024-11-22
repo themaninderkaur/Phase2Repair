@@ -3,7 +3,7 @@ package src.main.java;
 import java.util.Date;
 import java.util.ArrayList;
 
-public class User implements UserInterface{
+public class User implements UserInterface {
     private long userId;
     private String username;
     private String password;
@@ -15,10 +15,7 @@ public class User implements UserInterface{
 
     private ArrayList<String> userBlockedList;
     private ArrayList<String> userFriendsList;
-    
 
-    
-    
     public User(long userId, String username, String password, String email, String profilePictureUrl, String bio) {
         this.userId = userId;
         this.username = username;
@@ -27,14 +24,18 @@ public class User implements UserInterface{
         this.profilePictureUrl = profilePictureUrl;
         this.bio = bio;
         this.createdAt = new Date(); // Set to current date
-        this.userBlockedList = new ArrayList<String>();
-        this.userFriendsList = new ArrayList<String>();
+        this.userBlockedList = new ArrayList<>();
+        this.userFriendsList = new ArrayList<>();
     }
 
-    public User(String username, String password) {
-        this.username = username;
-        this.password = password;
+    public static boolean blockUser(User user, String s) {
+        return false;
     }
+
+    public static boolean unblockUser(ArrayList<ArrayList<User>> blockedUsers, long blockerId, long blockedId) {
+        return false;
+    }
+
 
     // Getters and Setters
     public long getUserId() { return userId; }
@@ -57,5 +58,29 @@ public class User implements UserInterface{
     public boolean isRestricted() {
         return restriction;
     }
+
+    // New methods to manage friends and blocked users
+/*
+    public void blockUser (String username) {
+        if (!userBlockedList.contains(username)) {
+            userBlockedList.add(username);
+        }
+    }*/
+
+    public void unblockUser (String username) {
+        userBlockedList.remove(username);
+    }
+
+    public void addFriend(String friendUsername) {
+        if (!userFriendsList.contains(friendUsername)) {
+            userFriendsList.add(friendUsername);
+        }
+    }
+
+    public void removeFriend(String friendUsername) {
+        userFriendsList.remove(friendUsername);
+    }
+
+
     
 }
