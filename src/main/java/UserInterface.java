@@ -2,14 +2,13 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Scanner;
 
-public class UserInterface {
+public interface UserInterface {
     Scanner scanner = new Scanner(System.in);
-    String correctUser;
-    String correctPass;
 
-
-    public void signUp(ArrayList<User> users) {
+    default void signUp(ArrayList<User> users) {
         boolean valid = false;
+        String correctUser = "";
+        String correctPass = "";
         do {
             System.out.println("Enter your username. Usernames must be 6-30 characters and can only be letters/numbers ");
             String username = scanner.nextLine();
@@ -56,7 +55,7 @@ public class UserInterface {
         System.out.println("Sign up successful! Welcome, " + correctUser);
     }
 
-    public User logIn(ArrayList<User> users) {
+    default User logIn(ArrayList<User> users) {
         System.out.println("Enter your username: ");
         String username = scanner.nextLine();
         System.out.println("Enter your password: ");
@@ -73,7 +72,7 @@ public class UserInterface {
         return null;
     }
 
-    public void viewProfile(User user) {
+    default void viewProfile(User user) {
         if (user == null) {
             System.out.println("No user is logged in.");
             return;
@@ -87,7 +86,7 @@ public class UserInterface {
         System.out.println("Account Created At: " + user.getCreatedAt());
     }
 
-    public void addFriend(User currentUser, ArrayList<User> users) {
+    default void addFriend(User currentUser, ArrayList<User> users) {
         if (currentUser == null) {
             System.out.println("No user is logged in.");
             return;
@@ -107,7 +106,7 @@ public class UserInterface {
         System.out.println("Failed to add friend. User not found or is blocked.");
     }
 
-    public void blockUser(User currentUser, ArrayList<User> users) {
+    default void blockUser(User currentUser, ArrayList<User> users) {
         if (currentUser == null) {
             System.out.println("No user is logged in.");
             return;
@@ -128,7 +127,7 @@ public class UserInterface {
         System.out.println("Failed to block user. User not found.");
     }
 
-    public void viewFriends(User currentUser) {
+    default void viewFriends(User currentUser) {
         if (currentUser == null) {
             System.out.println("No user is logged in.");
             return;
@@ -137,7 +136,7 @@ public class UserInterface {
         System.out.println("Friends List: " + currentUser.getFriendsList());
     }
 
-    public void viewBlockedUsers(User currentUser) {
+    default void viewBlockedUsers(User currentUser) {
         if (currentUser == null) {
             System.out.println("No user is logged in.");
             return;
@@ -146,7 +145,7 @@ public class UserInterface {
         System.out.println("Blocked Users: " + currentUser.getBlockedList());
     }
 
-    public String showUsers(ArrayList<User> users) {
+    default String showUsers(ArrayList<User> users) {
         String results = "";
 
         for (User u : users) {
@@ -156,7 +155,7 @@ public class UserInterface {
         return results.substring(2);
     } 
 
-    public boolean findUser(String username, ArrayList<User> users) {
+    default boolean findUser(String username, ArrayList<User> users) {
         for (User u : users) {
             if (u.getUsername() == username) {
                 return true;
