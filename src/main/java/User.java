@@ -3,7 +3,7 @@ package src.main.java;
 import java.util.Date;
 import java.util.ArrayList;
 
-public class User {
+public class User implements UserInterface{
     private long userId;
     private String username;
     private String password;
@@ -11,6 +11,7 @@ public class User {
     private String profilePictureUrl;
     private String bio;
     private Date createdAt;
+    private boolean restriction;
 
     private ArrayList<String> userBlockedList;
     private ArrayList<String> userFriendsList;
@@ -45,5 +46,16 @@ public class User {
     public Date getCreatedAt() { return createdAt; }
     public ArrayList<String> getBlockedList() { return userBlockedList; }
     public ArrayList<String> getFriendsList() { return userFriendsList; }
+
+    @Override
+    public void setRestricted(boolean restricted) {
+        restriction = restricted;
+        
+    }
+
+    @Override
+    public boolean isRestricted() {
+        return restriction;
+    }
     
 }
