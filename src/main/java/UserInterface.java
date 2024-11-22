@@ -216,7 +216,7 @@ public interface UserInterface {
                                 + " only accepts messages from friends.");
                 return false;
             } else {
-                if (allMessages.size() == 0) {
+                if (allMessages.isEmpty()) {
                     newMessage.add(user1.getUsername() + " & " + user2.getUsername());
                     newMessage.add(user1.getUsername() + ": " + message);
                     allMessages.add(newMessage);
@@ -245,7 +245,7 @@ public interface UserInterface {
 
     default boolean deleteMessage(User sender, User recipient, String message, ArrayList<ArrayList<String>> allMessages,
                                   ArrayList<User> users) {
-        if (allMessages.size() == 0) {
+        if (allMessages.isEmpty()) {
             return false;
         } else if (!findUser(sender.getUsername(), users) || !findUser(recipient.getUsername(),users)) {
             System.out.println("Users dont exist.");
@@ -260,16 +260,6 @@ public interface UserInterface {
             return false;
         }
     }
-
-    static void blockUser(User currentUser, String username) {
-        if (currentUser  != null) {
-            currentUser.blockUser(username);
-            System.out.println(username + " has been blocked.");
-        } else {
-            System.out.println("No user is logged in.");
-        }
-    }
-
 
     default void unblockUser (User currentUser , String username) {
         if (currentUser  != null) {

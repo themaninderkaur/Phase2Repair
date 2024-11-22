@@ -17,14 +17,6 @@ public class Databases {
 
     // Existing methods...
 
-    public boolean addBlockedUser (long blockerId, long blockedId) {
-        return User.blockUser(users.get((int)blockerId), blockedId+"");
-    }
-
-    public boolean removeBlockedUser (long blockerId, long blockedId) {
-        return User.unblockUser(blockedUsers, blockerId, blockedId);
-    }
-
     public void addFriend(long userId, long friendId) {
         // Assuming you have a way to find the user index by userId
         int userIndex = findUserIndexById(userId);
@@ -46,6 +38,48 @@ public class Databases {
             messages.get(receiverIndex).add(newMessage); // Optionally, store it in both lists
         }
     }
+        public void addBlockedUser (User currentUser, String username) {
+            if (currentUser  == null) {
+                System.out.println("No user is logged in.");
+                return;
+            }
+
+            int userIndex = findUserIndexById(currentUser.getUserId());
+            if (userIndex >= 0) {
+                // Ensure that the blockedUsers list has a sublist for this user
+                if (blockedUsers.size() <= userIndex) {
+                    blockedUsers.add(new ArrayList<>());
+                }
+                // Add the username to the blocked list
+                if (!blockedUsers.get(userIndex).contains(users.get(userIndex))) {
+                    blockedUsers.get(userIndex).add(users.get(userIndex));
+                    System.out.println(username + " has been added to the blocked list.");
+                } else {
+                    System.out.println(username + " is already in the blocked list.");
+                }
+            } else {
+                System.out.println("User  index out of bounds.");
+            }
+        }
+
+        public void removeBlockedUser (User currentUser , String username) {
+            if (currentUser  == null) {
+                System.out.println("No user is logged in.");
+                return;
+            }
+
+            int userIndex = findUserIndexById(currentUser.getUserId());
+            if (userIndex >= 0 && userIndex < blockedUsers.size()) {
+                ArrayList<User> userBlockedList = blockedUsers.get(userIndex);
+                if (userBlockedList.remove(users.get(userIndex))) {
+                    System.out.println(username + " has been removed from the blocked list.");
+                } else {
+                    System.out.println(username + " is not in the blocked list.");
+                }
+            } else {
+                System.out.println("User  index out of bounds.");
+            }
+        }
 
     private int findUserIndexById(long userId) {
         for (int i = 0; i < users.size(); i++) {
