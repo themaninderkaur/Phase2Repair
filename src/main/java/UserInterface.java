@@ -10,7 +10,8 @@ public interface UserInterface {
         String correctUser = "";
         String correctPass = "";
         do {
-            System.out.println("Enter your username. Usernames must be 6-30 characters and can only be letters/numbers ");
+            System.out
+                    .println("Enter your username. Usernames must be 6-30 characters and can only be letters/numbers ");
             String username = scanner.nextLine();
 
             if (findUser(username, users)) {
@@ -26,7 +27,7 @@ public interface UserInterface {
 
             }
         } while (!valid);
-        
+
         valid = false;
         do {
             System.out.println("Enter your password: ");
@@ -41,7 +42,7 @@ public interface UserInterface {
                 correctPass = password;
             }
         } while (!valid);
-        
+
         System.out.println("Enter your email: ");
         String email = scanner.nextLine();
         System.out.println("Enter your profile picture URL: ");
@@ -153,7 +154,7 @@ public interface UserInterface {
         }
 
         return results.substring(2);
-    } 
+    }
 
     default boolean findUser(String username, ArrayList<User> users) {
         for (User u : users) {
@@ -162,5 +163,97 @@ public interface UserInterface {
             }
         }
         return false;
+    }
+
+    default boolean isBlocked(User user1, User user2, ArrayList<User> users) {
+        if (!users.contains(user1) || !users.contains(user2)) {
+            return false;
+        } else {
+            if (user1.getBlockedList().contains(user2.getUsername())) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+    }
+
+    default boolean isFriend(User user1, User user2, ArrayList<User> users) {
+        if (!users.contains(user1) || !users.contains(user2)) {
+            return false;
+        } else {
+            if (user1.getFriendsList().contains(user2.getUsername())) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+    }
+
+    public void setRestricted(boolean restricted);
+
+    public boolean isRestricted();
+
+    default boolean sendMessage(User user1, User user2, ArrayList<ArrayList<String>> allMessages, ArrayList<User> users,
+            String message) {
+        if (!users.contains(user1) || !users.contains(user2)) {
+            System.out.println("Check to see if user 1 exists.");
+            return false;
+        } else {
+            ArrayList<String> newMessage = new ArrayList<String>();
+            boolean dmExists = false;
+            // Check if the recipient has blocked the sender
+            if (isBlocked(user2, user1, users)) {
+                System.out.println(
+                        "Message cannot be sent. " + user1.getUsername() + " is blocked by " + user2.getUsername());
+                return false;
+            } else if (user2.isRestricted() && !isFriend(user1, user2, users)) {
+                System.out
+                        .println("Message cannot be sent. " + user2.getUsername()
+                                + " only accepts messages from friends.");
+                return false;
+            } else {
+                if (allMessages.size() == 0) {
+                    newMessage.add(user1.getUsername() + " & " + user2.getUsername());
+                    newMessage.add(user1.getUsername() + ": " + message);
+                    allMessages.add(newMessage);
+                    System.out.println(user1.getUsername() + " sent to " + user2.getUsername() + ": " + message);
+                    return true;
+                } else {
+                    for (int i = 0; i < allMessages.size(); i++) {
+                        if (allMessages.get(i).get(0).equals(user1.getUsername() + " & " + user2.getUsername())
+                                || allMessages.get(i).get(0)
+                                        .equals(user2.getUsername() + " & " + user1.getUsername())) {
+                            allMessages.get(i).add(user1.getUsername() + ": " + message);
+                            System.out
+                                    .println(user1.getUsername() + " sent to " + user2.getUsername() + ": " + message);
+                            return true;
+                        }
+                    }
+                    newMessage.add(user1.getUsername() + " & " + user2.getUsername());
+                    newMessage.add(user1.getUsername() + ": " + message);
+                    allMessages.add(newMessage);
+                    System.out.println(user1.getUsername() + " sent to " + user2.getUsername() + ": " + message);
+                    return true;
+                }
+            }
+        }
+    }
+
+    default boolean deleteMessage(User sender, User recipient, String message, ArrayList<ArrayList<String>> allMessages, 
+    ArrayList<User> users) {
+        if (allMessages.size() == 0) {
+            return false;
+        } else if (!findUser(sender.getUsername(), users) || !findUser(recipient.getUsername(),users)) {
+            System.out.println("Users dont exist.");
+            return false;
+        } else {
+            for (int i = 0; i < allMessages.size(); i++) {
+                if (allMessages.get(i).get(0).equals(sender.getUsername() + " & " + recipient.getUsername())
+                        || allMessages.get(i).get(0).equals(recipient.getUsername() + " & " + sender.getUsername())) {
+                    return allMessages.get(i).remove(message);
+                }
+            }
+            return false;
+        }
     }
 }
