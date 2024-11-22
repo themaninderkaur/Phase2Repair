@@ -1,8 +1,10 @@
+package src.main.java;
+
 import java.util.ArrayList;
 
 public class Databases {
     private ArrayList<User> users;
-    private ArrayList<ArrayList<Friend>> friends; // 2D ArrayList for friends
+    private ArrayList<ArrayList<Friends>> friends; // 2D ArrayList for friends
     private ArrayList<ArrayList<Message>> messages; // 2D ArrayList for messages
     private ArrayList<ArrayList<BlockedUser >> blockedUsers; // 2D ArrayList for blocked users
 
@@ -22,9 +24,9 @@ public class Databases {
         blockedUsers.add(new ArrayList<>());
     }
 
-    public void addFriend(int userIndex, Friend friend) {
+    public void addFriend(int userIndex, Friends friends) {
         if (userIndex >= 0 && userIndex < friends.size()) {
-            friends.get(userIndex).add(friend);
+            friends.get(userIndex).add(friends);
         } else {
             throw new IndexOutOfBoundsException("User  index out of bounds.");
         }
@@ -61,7 +63,7 @@ public class Databases {
         return users;
     }
 
-    public ArrayList<Friend> getFriends(int userIndex) {
+    public ArrayList<Friends> getFriends(int userIndex) {
         if (userIndex >= 0 && userIndex < friends.size()) {
             return friends.get(userIndex);
         } else {
