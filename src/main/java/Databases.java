@@ -26,7 +26,7 @@ public class Databases {
         if (userIndex >= 0 && userIndex < friends.size()) {
             friends.get(userIndex).add(friend);
         } else {
-            System.out.println("User  index out of bounds.");
+            throw new IndexOutOfBoundsException("User  index out of bounds.");
         }
     }
 
@@ -36,7 +36,7 @@ public class Databases {
             messages.get(senderIndex).add(message);
             messages.get(receiverIndex).add(message); // Optionally, you can store it in both lists
         } else {
-            System.out.println("User  index out of bounds.");
+            throw new IndexOutOfBoundsException("User  index out of bounds.");
         }
     }
 
@@ -44,8 +44,16 @@ public class Databases {
         if (userIndex >= 0 && userIndex < blockedUsers.size()) {
             blockedUsers.get(userIndex).add(blockedUser );
         } else {
-            System.out.println("User  index out of bounds.");
+            throw new IndexOutOfBoundsException("User  index out of bounds.");
         }
+    }
+
+    public void addBlockedUser (long blockerId, long blockedId) {
+        BlockedUser.addBlockedUser (blockedUsers, blockerId, blockedId);
+    }
+
+    public boolean removeBlockedUser (long blockerId, long blockedId) {
+        return BlockedUser.removeBlockedUser (blockedUsers, blockerId, blockedId);
     }
 
     // Getters for the lists
@@ -57,8 +65,7 @@ public class Databases {
         if (userIndex >= 0 && userIndex < friends.size()) {
             return friends.get(userIndex);
         } else {
-            System.out.println("User  index out of bounds.");
-            return null;
+            throw new IndexOutOfBoundsException("User  index out of bounds.");
         }
     }
 
@@ -66,8 +73,7 @@ public class Databases {
         if (userIndex >= 0 && userIndex < messages.size()) {
             return messages.get(userIndex);
         } else {
-            System.out.println("User  index out of bounds.");
-            return null;
+            throw new IndexOutOfBoundsException("User  index out of bounds.");
         }
     }
 
@@ -75,8 +81,7 @@ public class Databases {
         if (userIndex >= 0 && userIndex < blockedUsers.size()) {
             return blockedUsers.get(userIndex);
         } else {
-            System.out.println("User  index out of bounds.");
-            return null;
+            throw new IndexOutOfBoundsException("User  index out of bounds.");
         }
     }
 }
