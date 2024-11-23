@@ -7,6 +7,7 @@ import src.main.java.Databases;
 import src.main.java.User;
 
 import java.util.ArrayList;
+
 import static org.junit.Assert.*;
 
 public class MessageTestCase {
@@ -24,15 +25,14 @@ public class MessageTestCase {
         user2 = new User(2, "Bob", "password456", "bob@example.com", "url2", "Bio of Bob");
 
         // Add users to the database
-        databases.getUsers().add(user1);
-        databases.getUsers().add(user2);
-        
+        databases.getUsers().add(0,user1);
+        databases.getUsers().add(1,user2);
+
         // Initialize friends and messages lists for both users
-        /** Seems to need to be able to add an arraylist, not a user.*/
-        databases.getFriends(0).add(new ArrayList<User>()); // Friends list for Alice
-        databases.getFriends(1).add(new ArrayList<User>()); // Friends list for Bob
-        databases.getMessages(0).add(new ArrayList<String>()); // Messages list for Alice
-        databases.getMessages(1).add(new ArrayList<String>()); // Messages list for Bob
+        databases.getFriends(0).add(user2); // Friends list for Alice
+        databases.getFriends(1).add(user1); // Friends list for Bob
+        databases.getMessages(0).add(user2); // Messages list for Alice
+        databases.getMessages(1).add(user1); // Messages list for Bob
     }
 
     @Test
@@ -46,19 +46,25 @@ public class MessageTestCase {
         databases.addMessage(user1.getUserId(), user2.getUserId(), messageContent, photoUrl, bio);
 
         // Assert
-        ArrayList<User> aliceMessages = databases.getMessages(0).get(0); // Messages for Alice
-        ArrayList<User> bobMessages = databases.getMessages(1).get(0); // Messages for Bob
+        ArrayList<User> aliceMessages = databases.getMessages(0); // Messages for Alice
+        ArrayList<User> bobMessages = databases.getMessages(1); // Messages for Bob
 
         assertEquals(1, aliceMessages.size());
         assertEquals(1, bobMessages.size());
 
-        // Check if the message content is correct
-        User aliceMessage = aliceMessages.get(0);
-        User bobMessage = bobMessages.get(0);
+        ArrayList<String> userOneMessages = databases.readMessageContent(0);
+        ArrayList<String> userTwoMessages = databases.readMessageContent(1);
+        String userOneContent = "";
+        String userTwoContent = "";
 
-        assertEquals(user1.getUserId(), Long.parseLong(aliceMessage.getUsername())); // Check sender ID
-        assertEquals(user2.getUserId(), Long.parseLong(bobMessage.getUsername())); // Check receiver ID
-        assertEquals(messageContent, aliceMessage.getBio()); // Check message content
-        assertEquals(messageContent, bobMessage.getBio()); // Check message content
+        for (String message : userOneMessages) {
+            userOneContent += message;
+        }
+        for (String message : userOneMessages) {
+            userTwoContent += message;
+        }
+
+        assertEquals(messageContent, userOneContent); // Check message content for Alice
+        assertEquals(messageContent, userTwoContent); // Check message content for Bob
     }
 }

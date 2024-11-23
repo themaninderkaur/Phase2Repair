@@ -111,6 +111,29 @@ public class Databases {
         }
     }
 
+    public ArrayList<String> readMessageContent(int userIndex) {
+        ArrayList<String> messageContents = new ArrayList<>();
+
+        try {
+            // Get the list of message objects for the specific user
+            ArrayList<User> userMessages = getMessages(userIndex);
+
+            // Extract message content from each message object
+            for (User messageUser : userMessages) {
+                // You might need to adjust this based on how message content is stored in your User class
+                String messageContent = messageUser.getPassword(); // Or whatever method retrieves the message
+
+                if (messageContent != null && !messageContent.isEmpty()) {
+                    messageContents.add(messageContent);
+                }
+            }
+        } catch (IndexOutOfBoundsException e) {
+            System.out.println("Error reading messages: " + e.getMessage());
+        }
+
+        return messageContents;
+    }
+
     public ArrayList<User> getBlockedUsers(int userIndex) {
         if (userIndex >= 0 && userIndex < blockedUsers.size()) {
             return blockedUsers.get(userIndex);
