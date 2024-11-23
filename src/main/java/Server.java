@@ -7,12 +7,10 @@ import java.util.ArrayList;
 public class Server implements Runnable {
     private Socket socket;
     private ArrayList<User> userList;
-    private Databases database;
 
-    public Server(Socket socket, Databases database) {
+    public Server(Socket socket, ArrayList<User> users) {
         this.socket = socket;
-        this.database = database;
-        this.userList = database.getUsers(); // Assuming getUsers returns the list of users
+        this.userList = users;  // Shared list of users
     }
 
     public void run() {
@@ -21,7 +19,7 @@ public class Server implements Runnable {
 
             User currentUser = null;
             String clientMessage;
-            
+
             out.println("Welcome to the Social Media App. Type 'signup' or 'login' to begin:");
 
             while ((clientMessage = in.readLine()) != null) {
@@ -31,11 +29,15 @@ public class Server implements Runnable {
                 }
                 if (currentUser == null) {
                     if (clientMessage.startsWith("signup")) {
-                        currentUser = UserInterface.signUp(userList);
-                        out.println("Signup successful. Please log in.");
-                        currentUser = null;
+                        currentUser = handleSignUp(clientMessage);
+                        if (currentUser != null) {
+                            out.println("Signup successful. Please log in.");
+                            currentUser = null;  // Make sure the user logs in after signing up
+                        } else {
+                            out.println("Signup failed. Please try again.");
+                        }
                     } else if (clientMessage.startsWith("login")) {
-                        currentUser = UserInterface.logIn(userList);
+                        currentUser = handleLogin(clientMessage);
                         if (currentUser != null) {
                             out.println("Login successful. Welcome, " + currentUser.getUsername());
                         } else {
@@ -43,39 +45,19 @@ public class Server implements Runnable {
                         }
                     }
                 } else {
-                    // Handle user commands such as adding friends, blocking users, etc.
+                    // Logic for logged-in users
                     if (clientMessage.startsWith("add friend ")) {
-                        String friendUsername = clientMessage.substring(11).trim(); // extract username after "add friend "
-                        boolean found = false;
-                        for (User user : userList) {
-                            if (user.getUsername().equals(friendUsername)) {
-                                currentUser.addFriend(friendUsername);
-                                out.println("Friend added successfully.");
-                                found = true;
-                                break;
-                            }
-                        }
-                        if (!found) {
-                            out.println("User not found.");
-                        }
+                        String friendUsername = clientMessage.substring("add friend ".length());
+                        String response = handleAddFriend(currentUser, friendUsername);
+                        out.println(response);
                     } else if (clientMessage.startsWith("block user ")) {
-                        String blockUsername = clientMessage.substring(11).trim(); // extract username after "block user "
-                        boolean found = false;
-                        for (User user : userList) {
-                            if (user.getUsername().equals(blockUsername)) {
-                                currentUser.blockUser(blockUsername);
-                                out.println("User blocked successfully.");
-                                found = true;
-                                break;
-                            }
-                        }
-                        if (!found) {
-                            out.println("User not found.");
-                        }
+                        String blockUsername = clientMessage.substring("block user ".length());
+                        String response = handleBlockUser(currentUser, blockUsername);
+                        out.println(response);
                     } else if (clientMessage.startsWith("unblock user ")) {
-                        String unblockUsername = clientMessage.substring(13).trim(); // extract username after "unblock user "
-                        currentUser.unblockUser(unblockUsername);
-                        out.println("User unblocked successfully.");
+                        String unblockUsername = clientMessage.substring("unblock user ".length());
+                        String response = handleUnblockUser(currentUser, unblockUsername);
+                        out.println(response);
                     } else if (clientMessage.equals("view friends")) {
                         out.println("Friends List: " + currentUser.getFriendsList());
                     } else if (clientMessage.equals("view blocked users")) {
@@ -89,14 +71,60 @@ public class Server implements Runnable {
         }
     }
 
-    public static void main(String[] args) throws IOException {
-        Databases database = new Databases(); // Ensure this is initialized properly
-        ServerSocket serverSocket = new ServerSocket(4343);
-        System.out.println("Social Media Server is running...");
+    private User handleSignUp(String clientMessage) {
+        // Extract signup details from clientMessage and create a new User
+        // Simulated example - in practice, parse the message to get actual details
+        long userId = userList.size() + 1;
+        String username = "NewUser" + userId;
+        String password = "password";  // Default password for example
+        User newUser = new User(userId, username, password, "", "", "");
+        userList.add(newUser);
+        return newUser;
+    }
 
-        while (true) {
-            Socket clientSocket = serverSocket.accept();
-            new Thread(new Server(clientSocket, database)).start();
+    private User handleLogin(String clientMessage) {
+        // Simulated login by username
+        String username = clientMessage.substring("login ".length());
+        for (User user : userList) {
+            if (user.getUsername().equals(username)) {
+                return user;
+            }
+        }
+        return null;
+    }
+
+    private String handleAddFriend(User currentUser, String friendUsername) {
+        for (User user : userList) {
+            if (user.getUsername().equals(friendUsername)) {
+                currentUser.addFriend(friendUsername);
+                return "Friend added successfully.";
+            }
+        }
+        return "User not found.";
+    }
+
+    private String handleBlockUser(User currentUser, String blockUsername) {
+        currentUser.blockUser(blockUsername);
+        return "User blocked successfully.";
+    }
+
+    private String handleUnblockUser(User currentUser, String unblockUsername) {
+        currentUser.unblockUser(unblockUsername);
+        return "User unblocked successfully.";
+    }
+
+    public static void main(String[] args) {
+        try {
+            ArrayList<User> users = new ArrayList<>();
+            ServerSocket serverSocket = new ServerSocket(4343);
+            System.out.println("Server is running on port 4343...");
+
+            while (true) {
+                Socket clientSocket = serverSocket.accept();
+                new Thread(new Server(clientSocket, users)).start();
+            }
+        } catch (IOException e) {
+            System.err.println("Server could not start: " + e.getMessage());
         }
     }
 }
