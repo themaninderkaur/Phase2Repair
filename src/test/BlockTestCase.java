@@ -1,8 +1,13 @@
+package src.test;
+
 import org.junit.Before;
 import org.junit.Test;
+
+import src.main.java.User;
+
 import static org.junit.Assert.*;
 
-import java.util.ArrayList;
+//import java.util.ArrayList;
 
 public class BlockTestCase {
     private User user1;
@@ -18,11 +23,11 @@ public class BlockTestCase {
     @Test
     public void testUnblockUser () {
         // Simulate blocking a user
-        user1.blockUser (user2.getUsername());
+        user1.blockUser (user1, user2.getUsername());
         assertTrue("Bob should be in Alice's blocked list.", user1.getBlockedList().contains(user2.getUsername()));
 
         // Now unblock the user
-        user1.unblockUser (user2.getUsername());
+        user1.unblockUser (user1, user2.getUsername());
         assertFalse("Bob should not be in Alice's blocked list after unblocking.", user1.getBlockedList().contains(user2.getUsername()));
     }
 }

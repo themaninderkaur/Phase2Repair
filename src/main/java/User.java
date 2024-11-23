@@ -28,7 +28,7 @@ public class User implements UserInterface {
         this.userFriendsList = new ArrayList<>();
     }
 
-    public static boolean blockUser(User user, String s) {
+    public boolean blockUser(User user, String s) {
         return false;
     }
 
@@ -60,12 +60,12 @@ public class User implements UserInterface {
     }
 
     // New methods to manage friends and blocked users
-/*
+
     public void blockUser (String username) {
         if (!userBlockedList.contains(username)) {
             userBlockedList.add(username);
         }
-    }*/
+    }
 
     public void unblockUser (String username) {
         userBlockedList.remove(username);
