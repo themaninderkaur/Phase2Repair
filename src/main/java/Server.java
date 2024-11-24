@@ -18,6 +18,7 @@ public class Server implements Runnable {
     }
 
     public void run() {
+        updateList();
         try (BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
              PrintWriter out = new PrintWriter(socket.getOutputStream(), true)) {
             User currentUser = null;
@@ -54,8 +55,6 @@ public class Server implements Runnable {
                             out.flush();
                             in.readLine();
                             loginSuccess = true;
-                            currentUser = null;
-                            manageUserCommands(currentUser);
                         } else {
                             out.write("Login failed. Please try again! Press any button to continue.");
                             out.println();
@@ -68,50 +67,39 @@ public class Server implements Runnable {
 
             System.out.println("Got here!!");
 
-            /**while ((clientMessage = in.readLine()) != null) {
-                if (clientMessage.equalsIgnoreCase("exit")) {
-                    out.println("Exiting... Goodbye!");
-                    break;
-                }
-                if (currentUser == null) {
-                    if (clientMessage.startsWith("signup")) {
-                        currentUser = handleSignUp();
-                        if (currentUser != null) {
-                            out.println("Signup successful. Please log in.");
-                            currentUser = null;  // Make sure the user logs in after signing up
-                        } else {
-                            out.println("Signup failed. Please try again.");
-                        }
-                    } else if (clientMessage.startsWith("login")) {
-                        currentUser = handleLogin();
-                        if (currentUser != null) {
-                            out.println("Login successful. Welcome, " + currentUser.getUsername());
-                        } else {
-                            out.println("Login failed. Try again.");
-                        }
-                    }
+            do {
+                out.println("Welcome " + currentUser.getUsername() + ", what would you like to do? Enter 1 to find users," +
+                " 2 for friend commands, 3 for blocked commands, and 4 for direct messages.");
+                String output = in.readLine();
+
+                if (output.equals("1")) {
+                    out.write(findUsers(currentUser) + "Press any button to continue.");
+                    out.println();
+                    out.flush();
+                    in.readLine();
+
+                } else if (output.equals("2")) {
+                    handleFriends(currentUser);
+                } else if (output.equals("3")) {
+
+                } else if (output.equals("4")) {
+                    handleMessages(currentUser);
+                } else if (output.equalsIgnoreCase("exit")) {
+                    out.write("Exiting program ... Press any button to continue.");
+                    out.println();
+                    out.flush();
+                    exit = true;
+
                 } else {
-                    // Logic for logged-in users
-                    if (clientMessage.startsWith("add friend ")) {
-                        String friendUsername = clientMessage.substring("add friend ".length());
-                        String response = handleAddFriend(currentUser, friendUsername);
-                        out.println(response);
-                    } else if (clientMessage.startsWith("block user ")) {
-                        String blockUsername = clientMessage.substring("block user ".length());
-                        String response = handleBlockUser(currentUser, blockUsername);
-                        out.println(response);
-                    } else if (clientMessage.startsWith("unblock user ")) {
-                        String unblockUsername = clientMessage.substring("unblock user ".length());
-                        String response = handleUnblockUser(currentUser, unblockUsername);
-                        out.println(response);
-                    } else if (clientMessage.equals("view friends")) {
-                        out.println("Friends List: " + currentUser.getFriendsList());
-                    } else if (clientMessage.equals("view blocked users")) {
-                        out.println("Blocked Users: " + currentUser.getBlockedList());
-                    }
+                    out.write("Incorrect syntax. Please choose from the correct choices. Press any random button to continue.");
+                    out.println();
+                    out.flush();
+                    in.readLine();
                 }
-                out.println("Awaiting command...");
-            } */
+
+
+            } while (!exit);
+            out.close();
         } catch (IOException e) {
             System.err.println("Error handling client: " + e.getMessage());
         }
@@ -124,6 +112,7 @@ public class Server implements Runnable {
         try {
             BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             PrintWriter writer = new PrintWriter(socket.getOutputStream());
+            BufferedWriter fileWriter = new BufferedWriter(new FileWriter("userlist.txt"));
 
             do {
                 writer.write("Enter your username. Usernames must be 6-30 characters and can only be letters/numbers.");
@@ -199,10 +188,9 @@ public class Server implements Runnable {
             writer.flush();
 
             String bio = reader.readLine();
-            System.out.println("Got here");
-
             User newUser = new User((long)userList.size()+1, correctUser, correctPass, email, profilePictureUrl, bio);
             userList.add(newUser);
+            fileWriter.write("hiii omg new user!");
             return newUser;
 
         } catch (IOException e) {
@@ -218,9 +206,6 @@ public class Server implements Runnable {
             int count = 0;
 
             do {
-                for (User u : userList) {
-                    System.out.println("Current users:" + u.getUsername() + u.getPassword());
-                }
                 writer.write("Enter your username: ");
                 writer.println();
                 writer.flush();
@@ -253,69 +238,86 @@ public class Server implements Runnable {
         }
         
     }
-    private void manageUserCommands(User currentUser) throws IOException {
-        String command;
-        try (BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-             PrintWriter out = new PrintWriter(socket.getOutputStream(), true)) {
-                out.println("Logged in as " + currentUser.getUsername() + ". Enter commands to manage your profile or 'logout' to exit.");
-        
-                while (!(command = in.readLine()).equalsIgnoreCase("logout")) {
-                    switch (command.split(" ")[0]) {
-                        case "add":
-                            if (command.startsWith("add friend ")) {
-                                String friendUsername = command.substring(11);
-                                currentUser.addFriend(friendUsername); // Assuming addFriend modifies internal state
-                                out.println("Friend added successfully.");
-                            }
-                            break;
-                        case "block":
-                            if (command.startsWith("block user ")) {
-                                String blockUsername = command.substring(11);
-                                currentUser.blockUser(blockUsername);
-                                out.println("User blocked successfully.");
-                            }   
-                            break;
-                        case "unblock":
-                            if (command.startsWith("unblock user ")) {
-                                String unblockUsername = command.substring(13);
-                                currentUser.unblockUser(unblockUsername);
-                                out.println("User unblocked successfully.");
-                            }
-                            break;
-                        case "view":
-                            if (command.equals("view friends")) {
-                                out.println("Friends List: " + String.join(", ", currentUser.getFriendsList()));
-                            } else if (command.equals("view blocked users")) {
-                                out.println("Blocked Users: " + String.join(", ", currentUser.getBlockedList()));
-                            }
-                            break;
-                        default:
-                            out.println("Unknown command.");
+    
+    private void handleFriends(User currentUser) {
+        try {
+            BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            PrintWriter writer = new PrintWriter(socket.getOutputStream());
+
+            boolean valid = false;
+
+            do {
+                writer.write("Enter [1] to add friends, [2] to remove friends, and [3] to view friends. No brackets are necessary, just enter the number. Type [exit] to cancel.");
+                writer.println();
+                writer.flush();
+                String result = reader.readLine();
+                if (result.equals("1")) {
+                    writer.write("Enter the username of the friend you wish to add.");
+                    writer.println();
+                    writer.flush();
+
+                    result = reader.readLine();
+                    if(!userExists(result, userList)) {
+                        writer.write(result + " doesn't exist. Press any button to continue.");
+                    } else if (currentUser.addFriend(result)) {
+                        writer.write(result + " has been added. Press any button to continue.");
+                    } else {
+                        writer.write("Not a valid user. Press any button to proceed.");  
                     }
+                    writer.println();
+                    writer.flush();
+                    reader.readLine();
+                    return;
+                } else if (result.equals("2")) {
+                    writer.write("Enter the username of the friend you wish to remove.");
+                    writer.println();
+                    writer.flush();
+
+                    result = reader.readLine();
+                    if (currentUser.removeFriend(result)) {
+                        writer.write(result + " has been removed. Press any button to continue.");
+                    } else {
+                        writer.write("Not a valid user. Press any button to proceed.");  
+                    }
+                    writer.println();
+                    writer.flush();
+                    reader.readLine();
+                    return;
+                } else if (result.equals("3")) {
+                    writer.write("Your current friends are: " + currentUser.getFriendsList().toString() + ". Press any button to continue.");
+                    writer.println();
+                    writer.flush();
+                    reader.readLine();
+                    return;
+                } else {
+                    writer.write("Invalid input. Try again.");
                 }
+            } while (!valid);
+
+            
+        } catch (IOException e) {
+            System.out.println("Error. Press any button to continue.");
+            return;
         }
-        catch (IOException e) {
-            System.err.println("Error handling client: " + e.getMessage());
-        }
-    }
-    private String handleAddFriend(User currentUser, String friendUsername) {
-        for (User user : userList) {
-            if (user.getUsername().equals(friendUsername)) {
-                currentUser.addFriend(friendUsername);
-                return "Friend added successfully.";
-            }
-        }
-        return "User not found.";
     }
 
-    private String handleBlockUser(User currentUser, String blockUsername) {
-        currentUser.blockUser(blockUsername);
-        return "User blocked successfully.";
+    private void handleMessages(User currentUser) {
+        try {
+            BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            PrintWriter writer = new PrintWriter(socket.getOutputStream());
+
+
+        } catch (IOException e) {
+            System.out.println("Haha IO exception what");
+        }
     }
 
-    private String handleUnblockUser(User currentUser, String unblockUsername) {
-        currentUser.unblockUser(unblockUsername);
-        return "User unblocked successfully.";
+    private String findUsers(User currentUser) {
+        String result = "Existing users are: ";
+        for (User u : userList) {
+            result += u.getUsername() + ", ";
+        }
+        return result;
     }
 
     private boolean userExists(String username, ArrayList<User> array) {
@@ -336,13 +338,72 @@ public class Server implements Runnable {
             ArrayList<User> users = new ArrayList<>();
             ServerSocket serverSocket = new ServerSocket(4343);
             System.out.println("Server is running on port 4343...");
-
             while (true) {
                 Socket clientSocket = serverSocket.accept();
+                
                 new Thread(new Server(clientSocket, users)).start();
             }
         } catch (IOException e) {
             System.err.println("Server could not start: " + e.getMessage());
+        }
+    }
+
+    private void updateList() {
+        try {
+            BufferedReader br = new BufferedReader(new FileReader("userlist.txt"));
+            String line = br.readLine();
+
+            while (line != null) {
+                int userID = Integer.parseInt(line.substring(0, line.indexOf(",")));
+                line = line.substring(line.indexOf(",") + 1);
+                String userN = line.substring(0, line.indexOf(","));
+                line = line.substring(line.indexOf(",") + 1);
+                String pass = line.substring(0, line.indexOf(","));
+                line = line.substring(line.indexOf(",") + 1);
+                String email = line.substring(0, line.indexOf(","));
+                line = line.substring(line.indexOf(",") + 1);
+                String profile = line;
+                line = line.substring(line.indexOf(",") + 1);
+                String bio = line;
+
+                userList.add(new User((long)userID, userN, pass, email, profile, bio));
+            }
+
+            for (User u : userList) {
+                br = new BufferedReader(new FileReader("friends.txt"));
+                String friendLine = br.readLine();
+
+                while (friendLine != null) {
+                    String[] friends = friendLine.split(":");
+
+                    if (friends[0].equals(u.getUsername())) {
+                        String[] userFriends = friends[1].split(",");
+
+                        for (String userF : userFriends) {
+                            u.addFriend(userF);
+                        }
+                    }
+                }
+            }
+
+            for (User u : userList) {
+                br = new BufferedReader(new FileReader("blocked.txt"));
+                String blockedLine = br.readLine();
+
+                while (blockedLine != null) {
+                    String[] blockeds = blockedLine.split(":");
+
+                    if (blockeds[0].equals(u.getUsername())) {
+                        String[] userBlocked = blockeds[1].split(",");
+
+                        for (String userB : userBlocked) {
+                            u.blockUser(userB);
+                        }
+                    }
+                }
+            }
+        } catch (IOException e) {
+            System.out.println("Guh not working.");
         }
     }
 }

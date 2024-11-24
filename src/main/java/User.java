@@ -71,14 +71,13 @@ public class User implements UserInterface {
         userBlockedList.remove(username);
     }
 
-    public void addFriend(String friendUsername) {
-        if (!userFriendsList.contains(friendUsername)) {
-            userFriendsList.add(friendUsername);
-        }
+    public boolean addFriend(String friendUsername) {
+        if (userFriendsList.contains(friendUsername)) return false;
+        return userFriendsList.add(friendUsername);
     }
 
-    public void removeFriend(String friendUsername) {
-        userFriendsList.remove(friendUsername);
+    public boolean removeFriend(String friendUsername) {
+        return userFriendsList.remove(friendUsername);
     }
 
 
