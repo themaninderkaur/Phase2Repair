@@ -8,6 +8,9 @@ public class Server implements Runnable {
     private Socket socket;
     private ArrayList<User> userList;
     private UserInterface userint;
+    private ArrayList<User> blockedUsers;
+    private ArrayList<User> friends;
+    
 
     public Server(Socket socket, ArrayList<User> users) {
         this.socket = socket;
@@ -52,6 +55,7 @@ public class Server implements Runnable {
                             in.readLine();
                             loginSuccess = true;
                             currentUser = null;
+                            manageUserCommands(currentUser);
                         } else {
                             out.write("Login failed. Please try again! Press any button to continue.");
                             out.println();
@@ -249,7 +253,46 @@ public class Server implements Runnable {
         }
         
     }
-
+    private void manageUserCommands(User currentUser) throws IOException {
+        String command;
+        out.println("Logged in as " + currentUser.getUsername() + ". Enter commands to manage your profile or 'logout' to exit.");
+        
+        while (!(command = in.readLine()).equalsIgnoreCase("logout")) {
+            switch (command.split(" ")[0]) {
+                case "add":
+                    if (command.startsWith("add friend ")) {
+                        String friendUsername = command.substring(11);
+                        currentUser.addFriend(friendUsername); // Assuming addFriend modifies internal state
+                        out.println("Friend added successfully.");
+                    }
+                    break;
+                case "block":
+                    if (command.startsWith("block user ")) {
+                        String blockUsername = command.substring(11);
+                        currentUser.blockUser(blockUsername);
+                        out.println("User blocked successfully.");
+                    }
+                    break;
+                case "unblock":
+                    if (command.startsWith("unblock user ")) {
+                        String unblockUsername = command.substring(13);
+                        currentUser.unblockUser(unblockUsername);
+                        out.println("User unblocked successfully.");
+                    }
+                    break;
+                case "view":
+                    if (command.equals("view friends")) {
+                        out.println("Friends List: " + String.join(", ", currentUser.getFriendsList()));
+                    } else if (command.equals("view blocked users")) {
+                        out.println("Blocked Users: " + String.join(", ", currentUser.getBlockedList()));
+                    }
+                    break;
+                default:
+                    out.println("Unknown command.");
+            }
+        }
+        out.println("You have been logged out.");
+    }
     private String handleAddFriend(User currentUser, String friendUsername) {
         for (User user : userList) {
             if (user.getUsername().equals(friendUsername)) {
