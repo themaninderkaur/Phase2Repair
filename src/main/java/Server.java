@@ -7,6 +7,7 @@ import java.util.ArrayList;
 public class Server implements Runnable {
     private Socket socket;
     private ArrayList<User> userList;
+    private UserInterface userint;
 
     public Server(Socket socket, ArrayList<User> users) {
         this.socket = socket;
@@ -16,20 +17,61 @@ public class Server implements Runnable {
     public void run() {
         try (BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
              PrintWriter out = new PrintWriter(socket.getOutputStream(), true)) {
-
             User currentUser = null;
             String clientMessage;
 
-            out.println("Welcome to the Social Media App. Type 'signup' or 'login' to begin:");
+            boolean exit = false;
+            boolean loginSuccess = false;
 
-            while ((clientMessage = in.readLine()) != null) {
+
+            while (currentUser == null && !loginSuccess) {
+                out.println("Welcome to the Social Media App. Type 'signup' or 'login' to begin:");
+                clientMessage = in.readLine();
+
+                if (clientMessage != null) {
+                    if (clientMessage.equalsIgnoreCase("signup")) {
+                        currentUser = handleSignUp();
+                        if (currentUser != null) {
+                            out.write("Signup successful! Press any button to continue.");
+                            out.println();
+                            out.flush();
+                            in.readLine();
+                            currentUser = null;
+                        } else {
+                            out.write("Signup failed. Please try again!");
+                            out.println();
+                            out.flush();
+                            in.readLine();
+                        }
+                    } else if (clientMessage.equalsIgnoreCase("login")) {
+                        currentUser = handleLogin();
+                        if (currentUser != null) {
+                            out.write("Login successful! Press any button to continue.");
+                            out.println();
+                            out.flush();
+                            in.readLine();
+                            loginSuccess = true;
+                            currentUser = null;
+                        } else {
+                            out.write("Login failed. Please try again! Press any button to continue.");
+                            out.println();
+                            out.flush();
+                            in.readLine();
+                        }
+                    }
+                }
+            }
+
+            System.out.println("Got here!!");
+
+            /**while ((clientMessage = in.readLine()) != null) {
                 if (clientMessage.equalsIgnoreCase("exit")) {
                     out.println("Exiting... Goodbye!");
                     break;
                 }
                 if (currentUser == null) {
                     if (clientMessage.startsWith("signup")) {
-                        currentUser = handleSignUp(clientMessage);
+                        currentUser = handleSignUp();
                         if (currentUser != null) {
                             out.println("Signup successful. Please log in.");
                             currentUser = null;  // Make sure the user logs in after signing up
@@ -37,7 +79,7 @@ public class Server implements Runnable {
                             out.println("Signup failed. Please try again.");
                         }
                     } else if (clientMessage.startsWith("login")) {
-                        currentUser = handleLogin(clientMessage);
+                        currentUser = handleLogin();
                         if (currentUser != null) {
                             out.println("Login successful. Welcome, " + currentUser.getUsername());
                         } else {
@@ -65,32 +107,147 @@ public class Server implements Runnable {
                     }
                 }
                 out.println("Awaiting command...");
-            }
+            } */
         } catch (IOException e) {
             System.err.println("Error handling client: " + e.getMessage());
         }
     }
 
-    private User handleSignUp(String clientMessage) {
-        // Extract signup details from clientMessage and create a new User
-        // Simulated example - in practice, parse the message to get actual details
-        long userId = userList.size() + 1;
-        String username = "NewUser" + userId;
-        String password = "password";  // Default password for example
-        User newUser = new User(userId, username, password, "", "", "");
-        userList.add(newUser);
-        return newUser;
+    private User handleSignUp() {
+        String correctUser;
+        String correctPass;
+        boolean valid = false;
+        try {
+            BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            PrintWriter writer = new PrintWriter(socket.getOutputStream());
+
+            do {
+                writer.write("Enter your username. Usernames must be 6-30 characters and can only be letters/numbers.");
+                writer.println();
+                writer.flush();
+
+                correctUser = reader.readLine();
+                if (userExists(correctUser, userList)) {
+                    writer.write("Username is already taken. Button to continue.");
+                    writer.println();
+                    writer.flush();
+                    reader.readLine();
+                } else if (correctUser.length() < 6) {
+                    writer.write("Username is too short.");
+                    writer.println();
+                    writer.flush();
+                    reader.readLine();
+                } else if (correctUser.length() > 30) {
+                    writer.write("Username is too long.");
+                    writer.println();
+                    writer.flush();
+                    reader.readLine();
+                } else if (!correctUser.matches("([A-Za-z0-9])*")) {
+                    writer.write("Username must consist only of letters and numbers.");
+                    writer.println();
+                    writer.flush();
+                    reader.readLine();
+                } else {
+                    valid = true;
+                }
+            } while (!valid);
+            valid = false;
+
+            do {
+                writer.write("Enter your password. Passwords must be between 8-128 characters.");
+                writer.println();
+                writer.flush();
+
+                correctPass = reader.readLine();
+                if (correctPass.length() < 8) {
+                    writer.write("Password is too short.");
+                    writer.println();
+                    writer.flush();
+                    reader.readLine();
+                } else if (correctPass.length() > 128) {
+                    writer.write("Password is too long.");
+                    writer.println();
+                    writer.flush();
+                    reader.readLine();
+                } else if (!correctPass.matches("([A-Za-z0-9])*")) {
+                    writer.write("Please have your password be only letters/numbers.");
+                    writer.println();
+                    writer.flush();
+                    reader.readLine();
+                } else {
+                    valid = true;
+                }
+            } while (!valid);
+
+            writer.write("Enter your email: ");
+            writer.println();
+            writer.flush();
+
+            String email = reader.readLine();
+
+            writer.write("Enter your profile picture URL: ");
+            writer.println();
+            writer.flush();
+            String profilePictureUrl = reader.readLine();
+
+            writer.write("Enter your bio: ");
+            writer.println();
+            writer.flush();
+
+            String bio = reader.readLine();
+            System.out.println("Got here");
+
+            User newUser = new User((long)userList.size()+1, correctUser, correctPass, email, profilePictureUrl, bio);
+            userList.add(newUser);
+            return newUser;
+
+        } catch (IOException e) {
+            System.out.println("IO EXCEPTION!!!");
+            return null;
+        }        
     }
 
-    private User handleLogin(String clientMessage) {
-        // Simulated login by username
-        String username = clientMessage.substring("login ".length());
-        for (User user : userList) {
-            if (user.getUsername().equals(username)) {
-                return user;
-            }
+    private User handleLogin() {
+        try {
+            BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            PrintWriter writer = new PrintWriter(socket.getOutputStream());
+            int count = 0;
+
+            do {
+                for (User u : userList) {
+                    System.out.println("Current users:" + u.getUsername() + u.getPassword());
+                }
+                writer.write("Enter your username: ");
+                writer.println();
+                writer.flush();
+                String user = reader.readLine();
+                
+                writer.write("Enter your password: ");
+                writer.println();
+                writer.flush();
+                String password = reader.readLine();
+
+                for (User u : userList) {
+                    if (u.getUsername().equals(user) && u.getPassword().equals(password)) {
+                        return u;
+                    }
+                }
+                writer.write("Incorrect user or password. Press any button to continue.");
+                reader.readLine();
+                writer.println();
+                writer.flush();
+                count++;
+            } while (count < 3);
+            writer.write("Login unsuccessful. Too many attempts. Try again later. Press any button to continue.");
+            reader.readLine();
+            writer.println();
+            writer.flush();
+            return null;
+        } catch (IOException e) {
+            System.out.println("IO EXCEPTION!!!");
+            return null;
         }
-        return null;
+        
     }
 
     private String handleAddFriend(User currentUser, String friendUsername) {
@@ -111,6 +268,19 @@ public class Server implements Runnable {
     private String handleUnblockUser(User currentUser, String unblockUsername) {
         currentUser.unblockUser(unblockUsername);
         return "User unblocked successfully.";
+    }
+
+    private boolean userExists(String username, ArrayList<User> array) {
+        if (array.size() < 1) {
+            return false;
+        } else {
+            for (User u : array) {
+                if (u.getUsername().equals(username)) {
+                    return true;
+                }
+            }
+            return false;
+        }
     }
 
     public static void main(String[] args) {

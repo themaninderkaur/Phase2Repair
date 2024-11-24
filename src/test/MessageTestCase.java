@@ -60,7 +60,7 @@ public class MessageTestCase {
         for (String message : userOneMessages) {
             userOneContent += message;
         }
-        for (String message : userOneMessages) {
+        for (String message : userTwoMessages) {
             userTwoContent += message;
         }
 

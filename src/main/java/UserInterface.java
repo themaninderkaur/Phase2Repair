@@ -9,74 +9,6 @@ import java.util.Scanner;
 public interface UserInterface {
     Scanner scanner = new Scanner(System.in);
 
-    default void signUp(ArrayList<User> users) {
-        boolean valid = false;
-        String correctUser = "";
-        String correctPass = "";
-        do {
-            System.out
-                    .println("Enter your username. Usernames must be 6-30 characters and can only be letters/numbers ");
-            String username = scanner.nextLine();
-
-            if (findUser(username, users)) {
-                System.out.println("Username is already taken.");
-            } else if (username.length() < 6) {
-                System.out.println("Username is too short.");
-            } else if (username.length() > 30) {
-                System.out.println("Username is too long.");
-            } else if (!username.matches("([A-Za-z0-9])*")) {
-                System.out.println("Username must consist only of letters and numbers.");
-            } else {
-                valid = true;
-
-            }
-        } while (!valid);
-
-        valid = false;
-        do {
-            System.out.println("Enter your password: ");
-            String password = scanner.nextLine();
-
-            if (password.length() < 8) {
-                System.out.println("Passwords must be at least 8 characters long.");
-            } else if (password.length() > 128) {
-                System.out.println("Passwords must be less than 128 characters long.");
-            } else {
-                valid = true;
-                correctPass = password;
-            }
-        } while (!valid);
-
-        System.out.println("Enter your email: ");
-        String email = scanner.nextLine();
-        System.out.println("Enter your profile picture URL: ");
-        String profilePictureUrl = scanner.nextLine();
-        System.out.println("Enter your bio: ");
-        String bio = scanner.nextLine();
-
-        long userId = users.size() + 1;
-        User newUser = new User(userId, correctUser, correctPass, email, profilePictureUrl, bio);
-        users.add(newUser);
-        System.out.println("Sign up successful! Welcome, " + correctUser);
-    }
-
-    default User logIn(ArrayList<User> users) {
-        System.out.println("Enter your username: ");
-        String username = scanner.nextLine();
-        System.out.println("Enter your password: ");
-        String password = scanner.nextLine();
-
-        for (User user : users) {
-            if (user.getUsername().equals(username) && user.getPassword().equals(password)) {
-                System.out.println("Login successful! Welcome back, " + username);
-                return user;
-            }
-        }
-
-        System.out.println("Login failed. Please check your credentials.");
-        return null;
-    }
-
     default void viewProfile(User user) {
         if (user == null) {
             System.out.println("No user is logged in.");
@@ -161,12 +93,16 @@ public interface UserInterface {
     }
 
     default boolean findUser(String username, ArrayList<User> users) {
-        for (User u : users) {
-            if (u.getUsername() == username) {
-                return true;
+        if (users.size() < 1) {
+            return false;
+        } else {
+            for (User u : users) {
+                if (u.getUsername().equals(username)) {
+                    return true;
+                }
             }
+            return false;
         }
-        return false;
     }
 
     default boolean isBlocked(User user1, User user2, ArrayList<User> users) {
