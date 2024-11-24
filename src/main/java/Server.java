@@ -112,7 +112,7 @@ public class Server implements Runnable {
         try {
             BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             PrintWriter writer = new PrintWriter(socket.getOutputStream());
-            BufferedWriter fileWriter = new BufferedWriter(new FileWriter("userlist.txt"));
+            BufferedWriter filee = new BufferedWriter(new FileWriter("src\\main\\java\\userlist.txt"));
 
             do {
                 writer.write("Enter your username. Usernames must be 6-30 characters and can only be letters/numbers.");
@@ -190,7 +190,10 @@ public class Server implements Runnable {
             String bio = reader.readLine();
             User newUser = new User((long)userList.size()+1, correctUser, correctPass, email, profilePictureUrl, bio);
             userList.add(newUser);
-            fileWriter.write("hiii omg new user!");
+            filee.write(userList.size() + "," + correctUser + "," + correctPass + "," + email + "," + profilePictureUrl + "," + bio);
+            filee.flush();
+            filee.close();
+            
             return newUser;
 
         } catch (IOException e) {
