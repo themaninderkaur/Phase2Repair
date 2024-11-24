@@ -255,43 +255,48 @@ public class Server implements Runnable {
     }
     private void manageUserCommands(User currentUser) throws IOException {
         String command;
-        out.println("Logged in as " + currentUser.getUsername() + ". Enter commands to manage your profile or 'logout' to exit.");
+        try (BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+             PrintWriter out = new PrintWriter(socket.getOutputStream(), true)) {
+                out.println("Logged in as " + currentUser.getUsername() + ". Enter commands to manage your profile or 'logout' to exit.");
         
-        while (!(command = in.readLine()).equalsIgnoreCase("logout")) {
-            switch (command.split(" ")[0]) {
-                case "add":
-                    if (command.startsWith("add friend ")) {
-                        String friendUsername = command.substring(11);
-                        currentUser.addFriend(friendUsername); // Assuming addFriend modifies internal state
-                        out.println("Friend added successfully.");
+                while (!(command = in.readLine()).equalsIgnoreCase("logout")) {
+                    switch (command.split(" ")[0]) {
+                        case "add":
+                            if (command.startsWith("add friend ")) {
+                                String friendUsername = command.substring(11);
+                                currentUser.addFriend(friendUsername); // Assuming addFriend modifies internal state
+                                out.println("Friend added successfully.");
+                            }
+                            break;
+                        case "block":
+                            if (command.startsWith("block user ")) {
+                                String blockUsername = command.substring(11);
+                                currentUser.blockUser(blockUsername);
+                                out.println("User blocked successfully.");
+                            }   
+                            break;
+                        case "unblock":
+                            if (command.startsWith("unblock user ")) {
+                                String unblockUsername = command.substring(13);
+                                currentUser.unblockUser(unblockUsername);
+                                out.println("User unblocked successfully.");
+                            }
+                            break;
+                        case "view":
+                            if (command.equals("view friends")) {
+                                out.println("Friends List: " + String.join(", ", currentUser.getFriendsList()));
+                            } else if (command.equals("view blocked users")) {
+                                out.println("Blocked Users: " + String.join(", ", currentUser.getBlockedList()));
+                            }
+                            break;
+                        default:
+                            out.println("Unknown command.");
                     }
-                    break;
-                case "block":
-                    if (command.startsWith("block user ")) {
-                        String blockUsername = command.substring(11);
-                        currentUser.blockUser(blockUsername);
-                        out.println("User blocked successfully.");
-                    }
-                    break;
-                case "unblock":
-                    if (command.startsWith("unblock user ")) {
-                        String unblockUsername = command.substring(13);
-                        currentUser.unblockUser(unblockUsername);
-                        out.println("User unblocked successfully.");
-                    }
-                    break;
-                case "view":
-                    if (command.equals("view friends")) {
-                        out.println("Friends List: " + String.join(", ", currentUser.getFriendsList()));
-                    } else if (command.equals("view blocked users")) {
-                        out.println("Blocked Users: " + String.join(", ", currentUser.getBlockedList()));
-                    }
-                    break;
-                default:
-                    out.println("Unknown command.");
-            }
+                }
         }
-        out.println("You have been logged out.");
+        catch (IOException e) {
+            System.err.println("Error handling client: " + e.getMessage());
+        }
     }
     private String handleAddFriend(User currentUser, String friendUsername) {
         for (User user : userList) {
