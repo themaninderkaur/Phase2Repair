@@ -81,7 +81,7 @@ public class Server implements Runnable {
                 } else if (output.equals("2")) {
                     handleFriends(currentUser);
                 } else if (output.equals("3")) {
-
+                    handleBlocked(currentUser);
                 } else if (output.equals("4")) {
                     handleMessages(currentUser);
                 } else if (output.equalsIgnoreCase("exit")) {
@@ -297,6 +297,84 @@ public class Server implements Runnable {
             
         } catch (IOException e) {
             System.out.println("Error. Press any button to continue.");
+            return;
+        }
+    }
+
+    private void handleBlocked(User currentUser) {
+        try {
+            BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            PrintWriter writer = new PrintWriter(socket.getOutputStream());
+
+            boolean valid = false;
+
+            do {
+                writer.write("Enter [1] to block a user, [2] to unblock a user, [3] to view blocked users. No brackets are necessary, just enter the number. Type [exit] to cancel.");
+                writer.println();
+                writer.flush();
+                String result = reader.readLine();
+
+                if (result.equals("1")) {
+                    // Block a user
+                    writer.write("Enter the username of the user you wish to block.");
+                    writer.println();
+                    writer.flush();
+
+                    result = reader.readLine();
+                    if (!userExists(result, userList)) {
+                        writer.write(result + " doesn't exist. Press any button to continue.");
+                    } else if (!result.equals(currentUser.getUsername())) {
+                        currentUser.blockUser(result);
+                        writer.write(result + " has been blocked. Press any button to continue.");
+                    } else {
+                        writer.write("You cannot block yourself. Press any button to continue.");
+                    }
+                    writer.println();
+                    writer.flush();
+                    reader.readLine();
+                    return;
+
+                } else if (result.equals("2")) {
+                    // Unblock a user
+                    writer.write("Enter the username of the user you wish to unblock.");
+                    writer.println();
+                    writer.flush();
+
+                    result = reader.readLine();
+                    if (currentUser.getBlockedList().contains(result)) {
+                        currentUser.unblockUser(result);
+                        writer.write(result + " has been unblocked. Press any button to continue.");
+                    } else {
+                        writer.write("This user is not in your blocked list. Press any button to continue.");
+                    }
+                    writer.println();
+                    writer.flush();
+                    reader.readLine();
+                    return;
+
+                } else if (result.equals("3")) {
+                    // View blocked users
+                    if (currentUser.getBlockedList().isEmpty()) {
+                        writer.write("You have no blocked users. Press any button to continue.");
+                    } else {
+                        writer.write("Your blocked users are: " + currentUser.getBlockedList().toString() + ". Press any button to continue.");
+                    }
+                    writer.println();
+                    writer.flush();
+                    reader.readLine();
+                    return;
+
+                } else if (result.equalsIgnoreCase("exit")) {
+                    return;
+                } else {
+                    writer.write("Invalid input. Try again.");
+                    writer.println();
+                    writer.flush();
+                }
+            } while (!valid);
+
+        } catch (IOException e) {
+            System.out.println("Error handling blocked users. Press any button to continue.");
             return;
         }
     }

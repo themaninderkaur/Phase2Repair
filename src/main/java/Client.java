@@ -16,7 +16,7 @@ public class Client {
         try {
             System.out.println("Connected to the Social Media Server!");
 
-            while (!exit) {
+            while (!exit){
                 String input = in.readLine();
                 if (input != null) {
                     System.out.println(input);
