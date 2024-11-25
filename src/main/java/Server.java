@@ -450,7 +450,7 @@ public class Server implements Runnable {
                     } else {
                         ArrayList<String> messages = database.readMessageContent(findUserIndexByUsername(otherUsername));
                         writer.write("Messages with " + otherUsername + ": " + " [Hello!] " + ". Press any button to continue.");
-                        writer.println();
+                        writer.println();//comment
                         writer.flush();
                         reader.readLine();
                     }
