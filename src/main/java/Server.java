@@ -112,7 +112,7 @@ public class Server implements Runnable {
         try {
             BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             PrintWriter writer = new PrintWriter(socket.getOutputStream());
-            BufferedWriter fileWriter = new BufferedWriter(new FileWriter("userlist.txt"));
+            BufferedWriter filee = new BufferedWriter(new FileWriter("src\\main\\java\\userlist.txt"));
 
             do {
                 writer.write("Enter your username. Usernames must be 6-30 characters and can only be letters/numbers.");
@@ -190,7 +190,10 @@ public class Server implements Runnable {
             String bio = reader.readLine();
             User newUser = new User((long)userList.size()+1, correctUser, correctPass, email, profilePictureUrl, bio);
             userList.add(newUser);
-            fileWriter.write("hiii omg new user!");
+            filee.write(userList.size() + "," + correctUser + "," + correctPass + "," + email + "," + profilePictureUrl + "," + bio);
+            filee.flush();
+            filee.close();
+            
             return newUser;
 
         } catch (IOException e) {
@@ -243,6 +246,7 @@ public class Server implements Runnable {
         try {
             BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             PrintWriter writer = new PrintWriter(socket.getOutputStream());
+            
 
             boolean valid = false;
 
@@ -261,6 +265,8 @@ public class Server implements Runnable {
                         writer.write(result + " doesn't exist. Press any button to continue.");
                     } else if (currentUser.addFriend(result)) {
                         writer.write(result + " has been added. Press any button to continue.");
+                        updateFriends();
+
                     } else {
                         writer.write("Not a valid user. Press any button to proceed.");  
                     }
@@ -276,6 +282,7 @@ public class Server implements Runnable {
                     result = reader.readLine();
                     if (currentUser.removeFriend(result)) {
                         writer.write(result + " has been removed. Press any button to continue.");
+                        updateFriends();
                     } else {
                         writer.write("Not a valid user. Press any button to proceed.");  
                     }
@@ -326,6 +333,7 @@ public class Server implements Runnable {
                     } else if (!result.equals(currentUser.getUsername())) {
                         currentUser.blockUser(result);
                         writer.write(result + " has been blocked. Press any button to continue.");
+                        updateBlocked();
                     } else {
                         writer.write("You cannot block yourself. Press any button to continue.");
                     }
@@ -344,6 +352,7 @@ public class Server implements Runnable {
                     if (currentUser.getBlockedList().contains(result)) {
                         currentUser.unblockUser(result);
                         writer.write(result + " has been unblocked. Press any button to continue.");
+                        updateBlocked();
                     } else {
                         writer.write("This user is not in your blocked list. Press any button to continue.");
                     }
@@ -599,6 +608,43 @@ public class Server implements Runnable {
             }
         } catch (IOException e) {
             System.out.println("Guh not working.");
+        }
+    }
+
+    private void updateFriends() {
+        try {
+            BufferedWriter bw = new BufferedWriter(new FileWriter("src\\main\\java\\friends.txt"));
+            for (User u : userList) {
+                String friendsList = u.getUsername() + ":";
+
+                for (String friend : u.getFriendsList()) {
+                    friendsList += ", " + friend;
+                }
+
+                bw.write(friendsList);
+                bw.newLine();
+            }
+        } catch (IOException e) {
+            System.out.println("Didn't wooork.");
+        }
+        
+    }
+
+    private void updateBlocked() {
+        try {
+            BufferedWriter bw = new BufferedWriter(new FileWriter("src\\main\\java\\blocked.txt"));
+            for (User u : userList) {
+                String blockedList = u.getUsername() + ":";
+
+                for (String blocked : u.getBlockedList()) {
+                    blockedList += ", " + blocked;
+                }
+
+                bw.write(blockedList);
+                bw.newLine();
+            }
+        } catch (IOException e) {
+            System.out.println("Didn't wooork.");
         }
     }
 }
