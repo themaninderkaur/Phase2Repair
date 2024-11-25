@@ -10,7 +10,7 @@ Emily - created User.java and Friends, directMessage methods for the interface. 
 
 Justin - Created the interfaces for User.java
 
-Adi - Server.java
+Adi - created and implemented logic for Server.java and client.java
 
 ## Classes
 User- The user class holds all the contructers and methods related to the user. This includes, creating a user, logging in, viewing your own user. The User object will also have multiple attributes including:
