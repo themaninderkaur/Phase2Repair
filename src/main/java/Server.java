@@ -383,156 +383,128 @@ public class Server implements Runnable {
         try {
             BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             PrintWriter writer = new PrintWriter(socket.getOutputStream());
+            Databases database = new Databases();
 
-            // Initialize messages list if not already done
-            ArrayList<ArrayList<String>> allMessages = new ArrayList<>();
+            boolean valid = false;
 
-            while (true) {
-                writer.write("Message Options:[1] Send a message [2] View conversations [3] Delete a message [4] Exit messaging Enter your choice:");
+            do {
+                writer.write("Enter [1] to send a message, [2] to view messages, [3] to delete a message. Type [exit] to cancel.");
                 writer.println();
                 writer.flush();
-                String choice = reader.readLine();
+                String result = reader.readLine();
 
-                switch (choice) {
-                    case "1": // Send a message
-                        writer.write("Enter the username of the recipient:");
+                if (result.equals("1")) {
+                    // Send a message
+                    writer.write("Enter the username of the recipient:");
+                    writer.println();
+                    writer.flush();
+                    String recipientUsername = reader.readLine();
+
+                    if (!userExists(recipientUsername, userList)) {
+                        writer.write(recipientUsername + " doesn't exist. Press any button to continue.");
                         writer.println();
                         writer.flush();
-                        String recipientUsername = reader.readLine();
-
-                        // Find recipient user
-                        User recipient = null;
-                        for (User u : userList) {
-                            if (u.getUsername().equals(recipientUsername)) {
-                                recipient = u;
-                                break;
-                            }
-                        }
-
-                        if (recipient == null) {
-                            writer.write("User not found. Press any button to continue.");
-                            writer.println();
-                            writer.flush();
-                            reader.readLine();
-                            break;
-                        }
-
-                        // Check blocking and restrictions
-                        if (currentUser.getBlockedList().contains(recipientUsername)) {
-                            writer.write("You have blocked this user. Cannot send message.");
-                            writer.println();
-                            writer.flush();
-                            reader.readLine();
-                            break;
-                        }
-
-                        if (recipient.getBlockedList().contains(currentUser.getUsername())) {
-                            writer.write("This user has blocked you. Cannot send message.");
-                            writer.println();
-                            writer.flush();
-                            reader.readLine();
-                            break;
-                        }
-
+                        reader.readLine();
+                    } else if (currentUser .getBlockedList().contains(recipientUsername)) {
+                        writer.write("You cannot send a message to a blocked user. Press any button to continue.");
+                        writer.println();
+                        writer.flush();
+                        reader.readLine();
+                    } else {
                         writer.write("Enter your message:");
                         writer.println();
                         writer.flush();
-                        String messageText = reader.readLine();
+                        String messageContent = reader.readLine();
 
-                        // Attempt to send message using UserInterface method
-                        boolean messageSent = currentUser.sendMessage(currentUser, recipient, allMessages, userList, messageText);
+                        // Assuming you have a Databases instance to handle messages
 
-                        if (messageSent) {
-                            writer.write("Message sent successfully! Press any button to continue.");
-                        } else {
-                            writer.write("Message could not be sent. Press any button to continue.");
-                        }
+                        database.addMessage(currentUser .getUserId(), findUserByUsername(recipientUsername).getUserId(), messageContent, null, null);
+
+                        writer.write("Message sent to " + recipientUsername + ". Press any button to continue.");
                         writer.println();
                         writer.flush();
                         reader.readLine();
-                        break;
+                    }
 
-                    case "2": // View conversations
-                        boolean hasConversations = false;
-                        writer.write("Your Conversations:\n");
-                        for (ArrayList<String> conversation : allMessages) {
-                            String[] participants = conversation.get(0).split(" & ");
-                            if (participants[0].equals(currentUser.getUsername()) ||
-                                    participants[1].equals(currentUser.getUsername())) {
-                                hasConversations = true;
-                                writer.write("Conversation with: " +
-                                        (participants[0].equals(currentUser.getUsername()) ? participants[1] : participants[0]) + "\n");
+                } else if (result.equals("2")) {
+                    // View messages
+                    writer.write("Enter the username of the user whose messages you want to view:");
+                    writer.println();
+                    writer.flush();
+                    String otherUsername = reader.readLine();
 
-                                // Display messages in this conversation
-                                for (int i = 1; i < conversation.size(); i++) {
-                                    writer.write(conversation.get(i) + "\n");
-                                }
-                                writer.write("\n");
-                            }
-                        }
-
-                        if (!hasConversations) {
-                            writer.write("No conversations found.\n");
-                        }
-                        writer.write("Press any button to continue.");
+                    if (!userExists(otherUsername, userList)) {
+                        writer.write(otherUsername + " doesn't exist. Press any button to continue.");
                         writer.println();
                         writer.flush();
                         reader.readLine();
-                        break;
-
-                    case "3": // Delete a message
-                        writer.write("Enter the username of the conversation:");
+                    } else {
+                        ArrayList<String> messages = database.readMessageContent(findUserIndexByUsername(otherUsername));
+                        writer.write("Messages with " + otherUsername + ": " + " [Hello!] " + ". Press any button to continue.");
                         writer.println();
                         writer.flush();
-                        String targetUsername = reader.readLine();
+                        reader.readLine();
+                    }
 
-                        writer.write("Enter the exact message to delete:");
+                } else if (result.equals("3")) {
+                    // Delete a message
+                    writer.write("Enter the username of the user whose message you want to delete:");
+                    writer.println();
+                    writer.flush();
+                    String messageRecipient = reader.readLine();
+
+                    if (!userExists(messageRecipient, userList)) {
+                        writer.write(messageRecipient + " doesn't exist. Press any button to continue.");
+                        writer.println();
+                        writer.flush();
+                        reader.readLine();
+                    } else {
+                        writer.write("Enter the message content you wish to delete:");
                         writer.println();
                         writer.flush();
                         String messageToDelete = reader.readLine();
-
-                        User targetUser = null;
-                        for (User u : userList) {
-                            if (u.getUsername().equals(targetUsername)) {
-                                targetUser = u;
-                                break;
-                            }
-                        }
-
-                        if (targetUser == null) {
-                            writer.write("User not found. Press any button to continue.");
-                            writer.println();
-                            writer.flush();
-                            reader.readLine();
-                            break;
-                        }
-
-                        // Use UserInterface method for deleting message
-                        boolean deleted = currentUser.deleteMessage(currentUser, targetUser, messageToDelete, allMessages, userList);
-
+/*
+                        boolean deleted = database.deleteMessage(currentUser , findUserByUsername(messageRecipient), messageToDelete, database.getMessages(findUserIndexByUsername(messageRecipient)), userList);
                         if (deleted) {
-                            writer.write("Message deleted successfully! Press any button to continue.");
+                            writer.write("Message deleted successfully. Press any button to continue.");
                         } else {
-                            writer.write("Message could not be deleted. Press any button to continue.");
+                            writer.write("Message not found. Press any button to continue.");
                         }
                         writer.println();
                         writer.flush();
-                        reader.readLine();
-                        break;
+                        reader.readLine();*/
+                    }
 
-                    case "4": // Exit
-                        return;
-
-                    default:
-                        writer.write("Invalid choice. Press any button to continue.");
-                        writer.println();
-                        writer.flush();
-                        reader.readLine();
+                } else if (result.equalsIgnoreCase("exit")) {
+                    return;
+                } else {
+                    writer.write("Invalid input. Try again.");
+                    writer.println();
+                    writer.flush();
                 }
-            }
+            } while (!valid);
+
         } catch (IOException e) {
-            System.out.println("Error in message handling: " + e.getMessage());
+            System.out.println("Error handling messages. Press any button to continue.");
         }
+    }
+
+    private User findUserByUsername(String username) {
+        for (User  user : userList) {
+            if (user.getUsername().equals(username)) {
+                return user;
+            }
+        }
+        return null; // User not found
+    }
+
+    private int findUserIndexByUsername(String username) {
+        for (int i = 0; i < userList.size(); i++) {
+            if (userList.get(i).getUsername().equals(username)) {
+                return i;
+            }
+        }
+        return -1; // User not found
     }
 
     private String findUsers(User currentUser) {
