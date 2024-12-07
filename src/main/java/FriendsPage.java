@@ -9,9 +9,11 @@ public class FriendsPage extends JFrame{
     JButton blocked;
     JButton messages;
     JPanel panel;
+
+    JTextArea friendsList;
     
 
-    public FriendsPage() {
+    public FriendsPage(User user) {
         panel = new JPanel();
         // Set up the frame
         setTitle("MESSAGING APP");
@@ -33,6 +35,36 @@ public class FriendsPage extends JFrame{
         JButton blocked = new JButton("Blocked");
         JButton messages = new JButton("Messages");
 
+        JTextField friendName = new JTextField("Username");
+        JButton add = new JButton("Add");
+        JButton remove = new JButton("Remove");
+
+        friendsList = new JTextArea();
+        updateList(user);
+
+        JPanel edit = new JPanel();
+        edit.setLayout(new GridLayout(0, 3));
+        edit.add(friendName);
+        edit.add(add);
+        edit.add(remove);
+
+        panel.add(friendsList, BorderLayout.CENTER);
+
+        add.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                user.getFriendsList().add(friendName.getText());
+                updateList(user);
+            }
+        });
+
+        remove.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                user.getFriendsList().remove(friendName.getText());
+                updateList(user);
+            }
+
+        });
+
         users.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -50,14 +82,14 @@ public class FriendsPage extends JFrame{
         profile.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                profilePage();
+                profilePage(user);
                 dispose();
             }
         });
         blocked.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                //blockedPage();
+                blockedPage(user);
                 dispose();
             }
         });
@@ -69,8 +101,11 @@ public class FriendsPage extends JFrame{
 
         panel.add(menu, BorderLayout.NORTH);
 
+
+
         panel.add(new JPanel(), BorderLayout.WEST);
         panel.add(new JPanel(), BorderLayout.EAST);
+        panel.add(edit, BorderLayout.SOUTH);
 
         // Add panel to the frame
         add(panel);
@@ -79,11 +114,23 @@ public class FriendsPage extends JFrame{
 
     }
 
-    public void profilePage() {
-        MainPage profilePage = new MainPage();
+    public void profilePage(User user) {
+        MainPage profilePage = new MainPage(user);
     }
 
     public static void main(String[] args) {
-        FriendsPage main = new FriendsPage();
     }
+
+    private void updateList(User user) {
+        friendsList.setText("FRIENDS LIST: \n");
+            for (String friend : user.getFriendsList()) {
+                friendsList.append(friend + "\n");
+            }
+    }
+
+    public void blockedPage(User user) {
+        BlockedPage bp = new BlockedPage(user);
+    }
+
+
 }
