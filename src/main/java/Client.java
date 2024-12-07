@@ -102,7 +102,7 @@ public class Client {
         frame.setLocationRelativeTo(null);
 
         JPanel panel = new JPanel();
-        panel.setLayout(new GridLayout(5, 2));
+        panel.setLayout(new GridLayout(6, 2)); // Increased rows to accommodate the back button
 
         JLabel usernameLabel = new JLabel("Username:");
         JTextField usernameField = new JTextField();
@@ -111,6 +111,13 @@ public class Client {
         JLabel emailLabel = new JLabel("Email:");
         JTextField emailField = new JTextField();
         JButton signupButton = new JButton("Signup");
+        JButton backButton = new JButton("Back"); // Create the Back button
+
+        // Action listener for the Back button
+        backButton.addActionListener(e -> {
+            showLandingPage(); // Show the landing page
+            frame.dispose(); // Close the signup frame
+        });
 
         signupButton.addActionListener(e -> {
             String username = usernameField.getText();
@@ -139,6 +146,7 @@ public class Client {
         panel.add(emailLabel);
         panel.add(emailField);
         panel.add(signupButton);
+        panel.add(backButton); // Add the Back button to the panel
         frame.add(panel);
         frame.setVisible(true);
     }
