@@ -2,6 +2,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 
 public class FriendsPage extends JFrame{
     JButton users;
@@ -13,7 +14,7 @@ public class FriendsPage extends JFrame{
     JTextArea friendsList;
     
 
-    public FriendsPage(User user) {
+    public FriendsPage(User user, ArrayList<String> userList) {
         panel = new JPanel();
         // Set up the frame
         setTitle("MESSAGING APP");
@@ -52,15 +53,30 @@ public class FriendsPage extends JFrame{
 
         add.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                user.getFriendsList().add(friendName.getText());
-                updateList(user);
+                if (userExists(friendName.getText(), userList)) {
+                    if (user.getFriendsList().add(friendName.getText())) {
+                        updateList(user);
+                    } else {
+                        JOptionPane.showMessageDialog(null, friendName.getText() + " was already a friend!", "WARNING", JOptionPane.INFORMATION_MESSAGE);
+                    }
+                } else {
+                    JOptionPane.showMessageDialog(null, "No such user exists!", "WARNING", JOptionPane.INFORMATION_MESSAGE);
+                }
             }
         });
 
         remove.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                user.getFriendsList().remove(friendName.getText());
-                updateList(user);
+                if (userExists(friendName.getText(), userList)) {
+                    if (user.getFriendsList().remove(friendName.getText())) {
+                        updateList(user);
+                    } else {
+                        JOptionPane.showMessageDialog(null, friendName.getText() + " was not a friend!", "WARNING", JOptionPane.INFORMATION_MESSAGE);
+                    }
+                } else {
+                    JOptionPane.showMessageDialog(null, "No such user exists!", "WARNING", JOptionPane.INFORMATION_MESSAGE);
+                }
+                
             }
 
         });
@@ -68,7 +84,7 @@ public class FriendsPage extends JFrame{
         users.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                //usersPage();
+                userPage(user, userList);
                 dispose();
             }
         });
@@ -82,14 +98,14 @@ public class FriendsPage extends JFrame{
         profile.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                profilePage(user);
+                profilePage(user, userList);
                 dispose();
             }
         });
         blocked.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                blockedPage(user);
+                blockedPage(user, userList);
                 dispose();
             }
         });
@@ -114,10 +130,6 @@ public class FriendsPage extends JFrame{
 
     }
 
-    public void profilePage(User user) {
-        MainPage profilePage = new MainPage(user);
-    }
-
     public static void main(String[] args) {
     }
 
@@ -128,8 +140,25 @@ public class FriendsPage extends JFrame{
             }
     }
 
-    public void blockedPage(User user) {
-        BlockedPage bp = new BlockedPage(user);
+    public void blockedPage(User user, ArrayList<String> userList) {
+        BlockedPage bp = new BlockedPage(user, userList);
+    }
+
+    public void profilePage(User user, ArrayList<String> userList) {
+        MainPage profilePage = new MainPage(user, userList);
+    }
+
+    public void userPage(User user, ArrayList<String> userList) {
+        UsersPage up = new UsersPage(user, userList);
+    }
+
+    private boolean userExists(String username, ArrayList<String> userList) {
+        for (String user : userList) {
+            if (user.equals(username)) {
+                return true;
+            }
+        }
+        return false;
     }
 
 
