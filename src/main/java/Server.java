@@ -11,9 +11,10 @@ public class Server implements Runnable {
     private ArrayList<User> blockedUsers;
     private ArrayList<User> friends;
 
+
     public Server(Socket socket, ArrayList<User> users) {
         this.socket = socket;
-        this.userList = users;
+        this.userList = users;  // Shared list of users
     }
 
     public void run() {
@@ -25,6 +26,7 @@ public class Server implements Runnable {
 
             boolean exit = false;
             boolean loginSuccess = false;
+
 
             while (currentUser == null && !loginSuccess) {
                 out.println("Welcome to the Social Media App. Type 'signup' or 'login' to begin:");
@@ -67,7 +69,7 @@ public class Server implements Runnable {
 
             do {
                 out.println("Welcome " + currentUser.getUsername() + ", what would you like to do? Enter 1 to find users," +
-                        " 2 for friend commands, 3 for blocked commands, and 4 for direct messages.");
+                " 2 for friend commands, 3 for blocked commands, and 4 for direct messages.");
                 String output = in.readLine();
 
                 if (output.equals("1")) {
@@ -95,6 +97,7 @@ public class Server implements Runnable {
                     in.readLine();
                 }
 
+
             } while (!exit);
             out.close();
         } catch (IOException e) {
@@ -102,14 +105,14 @@ public class Server implements Runnable {
         }
     }
 
-    private synchronized User handleSignUp() {
+    private User handleSignUp() {
         String correctUser;
         String correctPass;
         boolean valid = false;
         try {
             BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             PrintWriter writer = new PrintWriter(socket.getOutputStream());
-            BufferedWriter filee = new BufferedWriter(new FileWriter("src\\main\\java\\userlist.txt", true));
+            BufferedWriter filee = new BufferedWriter(new FileWriter("src\\main\\java\\userlist.txt"));
 
             do {
                 writer.write("Enter your username. Usernames must be 6-30 characters and can only be letters/numbers.");
@@ -185,10 +188,9 @@ public class Server implements Runnable {
             writer.flush();
 
             String bio = reader.readLine();
-            User newUser = new User((long) userList.size() + 1, correctUser, correctPass, email, profilePictureUrl, bio);
+            User newUser = new User((long)userList.size()+1, correctUser, correctPass, email, profilePictureUrl, bio);
             userList.add(newUser);
             filee.write(userList.size() + "," + correctUser + "," + correctPass + "," + email + "," + profilePictureUrl + "," + bio);
-            filee.newLine();
             filee.flush();
             filee.close();
 
@@ -199,7 +201,8 @@ public class Server implements Runnable {
             return null;
         }
     }
-    private synchronized User handleLogin() {
+
+    private User handleLogin() {
         try {
             BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             PrintWriter writer = new PrintWriter(socket.getOutputStream());
@@ -236,105 +239,7 @@ public class Server implements Runnable {
             System.out.println("IO EXCEPTION!!!");
             return null;
         }
-    }
 
-    private synchronized void updateList() {
-        try {
-            BufferedReader br = new BufferedReader(new FileReader("userlist.txt"));
-            String line = br.readLine();
-
-            while (line != null) {
-                int userID = Integer.parseInt(line.substring(0, line.indexOf(",")));
-                line = line.substring(line.indexOf(",") + 1);
-                String userN = line.substring(0, line.indexOf(","));
-                line = line.substring(line.indexOf(",") + 1);
-                String pass = line.substring(0, line.indexOf(","));
-                line = line.substring(line.indexOf(",") + 1);
-                String email = line.substring(0, line.indexOf(","));
-                line = line.substring(line.indexOf(",") + 1);
-                String profile = line;
-                line = line.substring(line.indexOf(",") + 1);
-                String bio = line;
-
-                userList.add(new User((long) userID, userN, pass, email, profile, bio));
-            }
-
-            for (User u : userList) {
-                br = new BufferedReader(new FileReader("friends.txt"));
-                String friendLine = br.readLine();
-
-                while (friendLine != null) {
-                    String[] friends = friendLine.split(":");
-
-                    if (friends[0].equals(u.getUsername())) {
-                        String[] userFriends = friends[1].split(",");
-
-                        for (String userF : userFriends) {
-                            u.addFriend(userF);
-                        }
-                    }
-                }
-            }
-
-            for (User u : userList) {
-                br = new BufferedReader(new FileReader("blocked.txt"));
-                String blockedLine = br.readLine();
-
-                while (blockedLine != null) {
-                    String[] blockeds = blockedLine.split(":");
-
-                    if (blockeds[0].equals(u.getUsername())) {
-                        String[] userBlocked = blockeds[1].split(",");
-
-                        for (String userB : userBlocked) {
-                            u.blockUser(userB);
-                        }
-                    }
-                }
-            }
-        } catch (IOException e) {
-            System.out.println("Error updating list.");
-        }
-    }
-
-    private synchronized void updateFriends() {
-        try {
-            BufferedWriter bw = new BufferedWriter(new FileWriter("src\\main\\java\\friends.txt"));
-            for (User u : userList) {
-                String friendsList = u.getUsername() + ":";
-
-                for (String friend : u.getFriendsList()) {
-                    friendsList += ", " + friend;
-                }
-
-                bw.write(friendsList);
-                bw.newLine();
-            }
-            bw.flush();
-            bw.close();
-        } catch (IOException e) {
-            System.out.println("Error updating friends.");
-        }
-    }
-
-    private synchronized void updateBlocked() {
-        try {
-            BufferedWriter bw = new BufferedWriter(new FileWriter("src\\main\\java\\blocked.txt"));
-            for (User u : userList) {
-                String blockedList = u.getUsername() + ":";
-
-                for (String blocked : u.getBlockedList()) {
-                    blockedList += ", " + blocked;
-                }
-
-                bw.write(blockedList);
-                bw.newLine();
-            }
-            bw.flush();
-            bw.close();
-        } catch (IOException e) {
-            System.out.println("Error updating blocked list.");
-        }
     }
 
     private void handleFriends(User currentUser) {
@@ -342,10 +247,11 @@ public class Server implements Runnable {
             BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             PrintWriter writer = new PrintWriter(socket.getOutputStream());
 
+
             boolean valid = false;
 
             do {
-                writer.write("Enter [1] to add friends, [2] to remove friends, and [3] to view friends. Type [exit] to cancel.");
+                writer.write("Enter [1] to add friends, [2] to remove friends, and [3] to view friends. No brackets are necessary, just enter the number. Type [exit] to cancel.");
                 writer.println();
                 writer.flush();
                 String result = reader.readLine();
@@ -355,7 +261,7 @@ public class Server implements Runnable {
                     writer.flush();
 
                     result = reader.readLine();
-                    if (!userExists(result, userList)) {
+                    if(!userExists(result, userList)) {
                         writer.write(result + " doesn't exist. Press any button to continue.");
                     } else if (currentUser.addFriend(result)) {
                         writer.write(result + " has been added. Press any button to continue.");
@@ -395,10 +301,13 @@ public class Server implements Runnable {
                 }
             } while (!valid);
 
+
         } catch (IOException e) {
-            System.out.println("Error handling friends.");
+            System.out.println("Error. Press any button to continue.");
+            return;
         }
     }
+
     private void handleBlocked(User currentUser) {
         try {
             BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
@@ -407,12 +316,13 @@ public class Server implements Runnable {
             boolean valid = false;
 
             do {
-                writer.write("Enter [1] to block a user, [2] to unblock a user, [3] to view blocked users. Type [exit] to cancel.");
+                writer.write("Enter [1] to block a user, [2] to unblock a user, [3] to view blocked users. No brackets are necessary, just enter the number. Type [exit] to cancel.");
                 writer.println();
                 writer.flush();
                 String result = reader.readLine();
 
                 if (result.equals("1")) {
+                    // Block a user
                     writer.write("Enter the username of the user you wish to block.");
                     writer.println();
                     writer.flush();
@@ -433,6 +343,7 @@ public class Server implements Runnable {
                     return;
 
                 } else if (result.equals("2")) {
+                    // Unblock a user
                     writer.write("Enter the username of the user you wish to unblock.");
                     writer.println();
                     writer.flush();
@@ -451,6 +362,7 @@ public class Server implements Runnable {
                     return;
 
                 } else if (result.equals("3")) {
+                    // View blocked users
                     if (currentUser.getBlockedList().isEmpty()) {
                         writer.write("You have no blocked users. Press any button to continue.");
                     } else {
@@ -471,158 +383,258 @@ public class Server implements Runnable {
             } while (!valid);
 
         } catch (IOException e) {
-            System.out.println("Error handling blocked users.");
+            System.out.println("Error handling blocked users. Press any button to continue.");
+            return;
         }
     }
+// Write a message to a file
+public boolean writeMessageToFile(String senderUsername, String receiverUsername, String message) {
+    synchronized (this) { // Lock to ensure thread safety
+        String filename;
+        if (senderUsername.compareTo(receiverUsername) < 0) {
+            filename = "chat" + senderUsername + receiverUsername + ".txt";
+        } else {
+            filename = "chat" + receiverUsername + senderUsername + ".txt";
+        }
+        try (PrintWriter writer = new PrintWriter(new FileWriter(filename, true))) {
+            writer.println(senderUsername + ": " + message);
+            return true;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+}
 
-    private void handleMessages(User currentUser) {
-        try {
-            BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            PrintWriter writer = new PrintWriter(socket.getOutputStream());
-            Databases database = new Databases();
+// Read messages from a file
+public ArrayList<String> readMessagesFromFile(String senderUsername, String receiverUsername) {
+    synchronized (this) { // Lock to ensure thread safety
+        String filename;
+        if (senderUsername.compareTo(receiverUsername) < 0) {
+            filename = "chat" + senderUsername + receiverUsername + ".txt";
+        } else {
+            filename = "chat" + receiverUsername + senderUsername + ".txt";
+        }
 
-            boolean valid = false;
+        ArrayList<String> messages = new ArrayList<>();
 
-            do {
-                writer.write("Enter [1] to send a message, [2] to view messages, [3] to delete a message. Type [exit] to cancel.");
+        try (BufferedReader reader = new BufferedReader(new FileReader(filename))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                messages.add(line);
+            }
+        } catch (FileNotFoundException e) {
+            System.out.println("No previous conversation found between " + senderUsername + " and " + receiverUsername);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return messages;
+    }
+}
+
+private void handleMessages(User currentUser) {
+    try {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        PrintWriter writer = new PrintWriter(socket.getOutputStream(), true);
+
+        boolean exit = false;
+
+        while (!exit) {
+            writer.write("Enter [1] to send a message, [2] to view messages. Type [exit] to cancel.");
+            writer.println();
+            writer.flush();
+            String result = reader.readLine();
+
+            if (result.equals("1")) {
+                // Sending a message
+                writer.write("Enter the username of the recipient:");
                 writer.println();
                 writer.flush();
-                String result = reader.readLine();
+                String recipientUsername = reader.readLine();
 
-                if (result.equals("1")) {
-                    writer.write("Enter the username of the recipient:");
-                    writer.println();
-                    writer.flush();
-                    String recipientUsername = reader.readLine();
-
-                    if (!userExists(recipientUsername, userList)) {
-                        writer.write(recipientUsername + " doesn't exist. Press any button to continue.");
-                        writer.println();
-                        writer.flush();
-                        reader.readLine();
-                    } else if (currentUser.getBlockedList().contains(recipientUsername)) {
-                        writer.write("You cannot send a message to a blocked user. Press any button to continue.");
-                        writer.println();
-                        writer.flush();
-                        reader.readLine();
-                    } else {
-                        writer.write("Enter your message:");
-                        writer.println();
-                        writer.flush();
-                        String messageContent = reader.readLine();
-
-                        database.addMessage(currentUser.getUserId(), findUserByUsername(recipientUsername).getUserId(), messageContent, null, null);
-
-                        writer.write("Message sent to " + recipientUsername + ". Press any button to continue.");
-                        writer.println();
-                        writer.flush();
-                        reader.readLine();
+                User recipient = findUserByUsername(recipientUsername);
+                                if (recipient == null) {
+                                    writer.write("User " + recipientUsername + " does not exist. Press any button to continue.");
+                                    writer.println();
+                                    writer.flush();
+                                    reader.readLine();
+                                    continue;
+                                }
+                
+                                writer.write("Enter your message:");
+                                writer.println();
+                                writer.flush();
+                                String messageContent = reader.readLine();
+                
+                                if (writeMessageToFile(currentUser.getUsername(), recipientUsername, messageContent)) {
+                                    writer.write("Message sent to " + recipientUsername + ". Press any button to continue.");
+                                } else {
+                                    writer.write("Failed to send the message. Press any button to continue.");
+                                }
+                                writer.println();
+                                writer.flush();
+                                reader.readLine();
+                
+                            } else if (result.equals("2")) {
+                                // Viewing messages
+                                writer.write("Enter the username of the user whose messages you want to view:");
+                                writer.println();
+                                writer.flush();
+                                String otherUsername = reader.readLine();
+                
+                                User otherUser = findUserByUsername(otherUsername);
+                                if (otherUser == null) {
+                                    writer.write("User " + otherUsername + " does not exist. Press any button to continue.");
+                                    writer.println();
+                                    writer.flush();
+                                    reader.readLine();
+                                    continue;
+                                }
+                
+                                ArrayList<String> messages = readMessagesFromFile(currentUser.getUsername(), otherUsername);
+                                writer.write("Messages with " + otherUsername + ":\n");
+                                for (String message : messages) {
+                                    writer.write(message + "\n");
+                                }
+                                if (messages.isEmpty()) {
+                                    writer.write("No previous messages found.\n");
+                                }
+                                writer.write("Press any button to continue.");
+                                writer.println();
+                                writer.flush();
+                                reader.readLine();
+                
+                            } else if (result.equalsIgnoreCase("exit")) {
+                                writer.write("Exiting direct messages. Returning to the main menu...");
+                                writer.println();
+                                writer.flush();
+                                exit = true;
+                            } else {
+                                writer.write("Invalid input. Try again.");
+                                writer.println();
+                                writer.flush();
+                            }
+                        }
+                
+                    } catch (IOException e) {
+                        System.out.println("Error handling messages: " + e.getMessage());
                     }
-
-                } else if (result.equals("2")) {
-                    writer.write("Enter the username of the user whose messages you want to view:");
-                    writer.println();
-                    writer.flush();
-                    String otherUsername = reader.readLine();
-
-                    if (!userExists(otherUsername, userList)) {
-                        writer.write(otherUsername + " doesn't exist. Press any button to continue.");
-                        writer.println();
-                        writer.flush();
-                        reader.readLine();
-                    } else {
-                        ArrayList<String> messages = database.readMessageContent(findUserIndexByUsername(otherUsername));
-                        writer.write("Messages with " + otherUsername + ": " + messages + ". Press any button to continue.");
-                        writer.println();
-                        writer.flush();
-                        reader.readLine();
-                    }
-
-                } else if (result.equals("3")) {
-                    writer.write("Enter the username of the user whose message you want to delete:");
-                    writer.println();
-                    writer.flush();
-                    String messageRecipient = reader.readLine();
-
-                    if (!userExists(messageRecipient, userList)) {
-                        writer.write(messageRecipient + " doesn't exist. Press any button to continue.");
-                        writer.println();
-                        writer.flush();
-                        reader.readLine();
-                    } else {
-                        writer.write("Enter the message content you wish to delete:");
-                        writer.println();
-                        writer.flush();
-                        String messageToDelete = reader.readLine();
-                    }
-
-                } else if (result.equalsIgnoreCase("exit")) {
-                    return;
-                } else {
-                    writer.write("Invalid input. Try again.");
-                    writer.println();
-                    writer.flush();
                 }
-            } while (!valid);
-
-        } catch (IOException e) {
-            System.out.println("Error handling messages.");
-        }
-    }
-
-    private User findUserByUsername(String username) {
-        for (User user : userList) {
-            if (user.getUsername().equals(username)) {
-                return user;
-            }
-        }
-        return null;
-    }
-
-    private int findUserIndexByUsername(String username) {
-        for (int i = 0; i < userList.size(); i++) {
-            if (userList.get(i).getUsername().equals(username)) {
-                return i;
-            }
-        }
-        return -1;
-    }
-
-    private String findUsers(User currentUser) {
-        String result = "Existing users are: ";
-        for (User u : userList) {
-            result += u.getUsername() + ", ";
-        }
-        return result;
-    }
-
-    private boolean userExists(String username, ArrayList<User> array) {
-        if (array.size() < 1) {
-            return false;
-        } else {
-            for (User u : array) {
-                if (u.getUsername().equals(username)) {
-                    return true;
+                
+                
+                    private User findUserByUsername(String recipientUsername) {
+                    // TODO Auto-generated method stub
+                    throw new UnsupportedOperationException("Unimplemented method 'findUserByUsername'");
                 }
-            }
-            return false;
-        }
-    }
-
-    public static void main(String[] args) {
+                
+                    public static void main(String[] args) {
         try {
             ArrayList<User> users = new ArrayList<>();
             ServerSocket serverSocket = new ServerSocket(4343);
             System.out.println("Server is running on port 4343...");
             while (true) {
                 Socket clientSocket = serverSocket.accept();
+
                 new Thread(new Server(clientSocket, users)).start();
             }
         } catch (IOException e) {
             System.err.println("Server could not start: " + e.getMessage());
         }
     }
+
+    private void updateList() {
+        try {
+            BufferedReader br = new BufferedReader(new FileReader("userlist.txt"));
+            String line = br.readLine();
+
+            while (line != null) {
+                int userID = Integer.parseInt(line.substring(0, line.indexOf(",")));
+                line = line.substring(line.indexOf(",") + 1);
+                String userN = line.substring(0, line.indexOf(","));
+                line = line.substring(line.indexOf(",") + 1);
+                String pass = line.substring(0, line.indexOf(","));
+                line = line.substring(line.indexOf(",") + 1);
+                String email = line.substring(0, line.indexOf(","));
+                line = line.substring(line.indexOf(",") + 1);
+                String profile = line;
+                line = line.substring(line.indexOf(",") + 1);
+                String bio = line;
+
+                userList.add(new User((long)userID, userN, pass, email, profile, bio));
+            }
+
+            for (User u : userList) {
+                br = new BufferedReader(new FileReader("friends.txt"));
+                String friendLine = br.readLine();
+
+                while (friendLine != null) {
+                    String[] friends = friendLine.split(":");
+
+                    if (friends[0].equals(u.getUsername())) {
+                        String[] userFriends = friends[1].split(",");
+
+                        for (String userF : userFriends) {
+                            u.addFriend(userF);
+                        }
+                    }
+                }
+            }
+
+            for (User u : userList) {
+                br = new BufferedReader(new FileReader("blocked.txt"));
+                String blockedLine = br.readLine();
+
+                while (blockedLine != null) {
+                    String[] blockeds = blockedLine.split(":");
+
+                    if (blockeds[0].equals(u.getUsername())) {
+                        String[] userBlocked = blockeds[1].split(",");
+
+                        for (String userB : userBlocked) {
+                            u.blockUser(userB);
+                        }
+                    }
+                }
+            }
+        } catch (IOException e) {
+            System.out.println("Guh not working.");
+        }
+    }
+
+    private void updateFriends() {
+        try {
+            BufferedWriter bw = new BufferedWriter(new FileWriter("src\\main\\java\\friends.txt"));
+            for (User u : userList) {
+                String friendsList = u.getUsername() + ":";
+
+                for (String friend : u.getFriendsList()) {
+                    friendsList += ", " + friend;
+                }
+
+                bw.write(friendsList);
+                bw.newLine();
+            }
+        } catch (IOException e) {
+            System.out.println("Didn't wooork.");
+        }
+
+    }
+
+    private void updateBlocked() {
+        try {
+            BufferedWriter bw = new BufferedWriter(new FileWriter("src\\main\\java\\blocked.txt"));
+            for (User u : userList) {
+                String blockedList = u.getUsername() + ":";
+
+                for (String blocked : u.getBlockedList()) {
+                    blockedList += ", " + blocked;
+                }
+
+                bw.write(blockedList);
+                bw.newLine();
+            }
+        } catch (IOException e) {
+            System.out.println("Didn't wooork.");
+        }
+    }
 }
-
-
-
