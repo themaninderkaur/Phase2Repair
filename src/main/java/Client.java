@@ -9,188 +9,134 @@ import java.net.Socket;
 
 public class Client {
     private Socket socket;
-    private PrintWriter out;
     private BufferedReader in;
-    private JTextArea messageArea; // Area to display messages from the server
-    private JTextField inputField; // Field for user input
+    private PrintWriter out;
+
+    private JFrame frame;
+    private CardLayout cardLayout;
+    private JPanel mainPanel;
 
     public Client() {
         try {
             socket = new Socket("localhost", 4343);
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             out = new PrintWriter(socket.getOutputStream(), true);
-            showLandingPage();
+            initializeGUI();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    private void showLandingPage() {
-        JFrame frame = new JFrame("Social Media App");
+    private void initializeGUI() {
+        frame = new JFrame("Social Media App");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(400, 300);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setLocationRelativeTo(null);
 
-        JPanel panel = new JPanel();
-        panel.setLayout(new GridLayout(3, 1));
+        cardLayout = new CardLayout();
+        mainPanel = new JPanel(cardLayout);
 
-        JButton loginButton = new JButton("Login");
-        JButton signupButton = new JButton("Signup");
-
-        loginButton.addActionListener(e -> {
-            showLoginPage();
-            frame.dispose();
-        });
-
-        signupButton.addActionListener(e -> {
-            showSignupPage();
-            frame.dispose();
-        });
-
-        panel.add(loginButton);
-        panel.add(signupButton);
-        frame.add(panel);
-        frame.setVisible(true);
-    }
-
-    private void showLoginPage() {
-        JFrame frame = new JFrame("Login");
-        frame.setSize(300, 200);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setLocationRelativeTo(null);
-
-        JPanel panel = new JPanel();
-        panel.setLayout(new GridLayout(3, 2));
-
-        JLabel usernameLabel = new JLabel("Username:");
+        // Login Panel
+        JPanel loginPanel = new JPanel();
+        loginPanel.setLayout(new GridLayout(3, 2));
         JTextField usernameField = new JTextField();
-        JLabel passwordLabel = new JLabel("Password:");
         JPasswordField passwordField = new JPasswordField();
         JButton loginButton = new JButton("Login");
+        JButton signupButton = new JButton("Go to Signup");
 
-        loginButton.addActionListener(e -> {
-            String username = usernameField.getText();
-            String password = new String(passwordField.getPassword());
-            out.println("login");
-            out.println(username);
-            out.println(password);
-            try {
-                String response = in.readLine();
-                JOptionPane.showMessageDialog(frame, response);
-                if (response.contains("successful")) {
-                    showMainApp();
-                    frame.dispose();
-                }
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
-        });
+        loginPanel.add(new JLabel("Username:"));
+        loginPanel.add(usernameField);
+        loginPanel.add(new JLabel("Password:"));
+        loginPanel.add(passwordField);
+        loginPanel.add(loginButton);
+        loginPanel.add(signupButton);
 
-        panel.add(usernameLabel);
-        panel.add(usernameField);
-        panel.add(passwordLabel);
-        panel.add(passwordField);
-        panel.add(loginButton);
-        frame.add(panel);
-        frame.setVisible(true);
-    }
-
-    private void showSignupPage() {
-        JFrame frame = new JFrame("Signup");
-        frame.setSize(300, 300);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setLocationRelativeTo(null);
-
-        JPanel panel = new JPanel();
-        panel.setLayout(new GridLayout(6, 2)); // Increased rows to accommodate the back button
-
-        JLabel usernameLabel = new JLabel("Username:");
-        JTextField usernameField = new JTextField();
-        JLabel passwordLabel = new JLabel("Password:");
-        JPasswordField passwordField = new JPasswordField();
-        JLabel emailLabel = new JLabel("Email:");
+        // Signup Panel
+        JPanel signupPanel = new JPanel();
+        signupPanel.setLayout(new GridLayout(5, 2));
+        JTextField signupUsernameField = new JTextField();
+        JPasswordField signupPasswordField = new JPasswordField();
         JTextField emailField = new JTextField();
-        JButton signupButton = new JButton("Signup");
-        JButton backButton = new JButton("Back"); // Create the Back button
+        JTextField profilePictureField = new JTextField();
+        JTextField bioField = new JTextField();
+        JButton signupSubmitButton = new JButton("Signup");
+        JButton backToLoginButton = new JButton("Back to Login");
 
-        // Action listener for the Back button
-        backButton.addActionListener(e -> {
-            showLandingPage(); // Show the landing page
-            frame.dispose(); // Close the signup frame
-        });
+        signupPanel.add(new JLabel("Username:"));
+        signupPanel.add(signupUsernameField);
+        signupPanel.add(new JLabel("Password:"));
+        signupPanel.add(signupPasswordField);
+        signupPanel.add(new JLabel("Email:"));
+        signupPanel.add(emailField);
+        signupPanel.add(new JLabel("Profile Picture URL:"));
+        signupPanel.add(profilePictureField);
+        signupPanel.add(new JLabel("Bio:"));
+        signupPanel.add(bioField);
+        signupPanel.add(signupSubmitButton);
+        signupPanel.add(backToLoginButton);
 
-        signupButton.addActionListener(e -> {
-            String username = usernameField.getText();
-            String password = new String(passwordField.getPassword());
-            String email = emailField.getText();
-            out.println("signup");
-            out.println(username);
-            out.println(password);
-            out.println(email);
-            try {
-                String response = in.readLine();
-                JOptionPane.showMessageDialog(frame, response);
-                if (response.contains("successful")) {
-                    showMainApp();
-                    frame.dispose();
-                }
-            } catch (IOException ex) {
-                ex.printStackTrace();
+        mainPanel.add(loginPanel, "Login");
+        mainPanel.add(signupPanel, "Signup");
+
+        frame.add(mainPanel);
+        frame.setVisible(true);
+
+        // Action Listeners
+        loginButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String username = usernameField.getText();
+                String password = new String(passwordField.getPassword());
+                out.println("login");
+                out.println(username);
+                out.println(password);
+                handleServerResponse();
             }
         });
 
-        panel.add(usernameLabel);
-        panel.add(usernameField);
-        panel.add(passwordLabel);
-        panel.add(passwordField);
-        panel.add(emailLabel);
-        panel.add(emailField);
-        panel.add(signupButton);
-        panel.add(backButton); // Add the Back button to the panel
-        frame.add(panel);
-        frame.setVisible(true);
+        signupButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                cardLayout.show(mainPanel, "Signup");
+            }
+        });
+
+        signupSubmitButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String username = signupUsernameField.getText();
+                String password = new String(signupPasswordField.getPassword());
+                String email = emailField.getText();
+                String profilePictureUrl = profilePictureField.getText();
+                String bio = bioField.getText();
+
+                out.println("signup");
+                out.println(username);
+                out.println(password);
+                out.println(email);
+                out.println(profilePictureUrl);
+                out.println(bio);
+                handleServerResponse();
+            }
+        });
+
+        backToLoginButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                cardLayout.show(mainPanel, "Login");
+            }
+        });
     }
 
-    private void showMainApp() {
-        JFrame frame = new JFrame("Main Application");
-        frame.setSize(400, 400);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setLocationRelativeTo(null);
-
-        JPanel panel = new JPanel();
-        panel.setLayout(new BorderLayout());
-
-        messageArea = new JTextArea();
-        messageArea.setEditable(false);
-        JScrollPane scrollPane = new JScrollPane(messageArea);
-        panel.add(scrollPane, BorderLayout.CENTER);
-
-        inputField = new JTextField();
-        panel.add(inputField, BorderLayout.SOUTH);
-
-        inputField.addActionListener(e -> {
-            String message = inputField.getText();
-            out.println(message); // Send the message to the server
-            inputField.setText(""); // Clear the input field
-        });
-
-        frame.add(panel);
-        frame.setVisible(true);
-
-        // Start a thread to listen for messages from the server
-        new Thread(() -> {
-            String serverMessage;
-            try {
-                while ((serverMessage = in.readLine()) != null) {
-                    messageArea.append("Server: " + serverMessage + "\n");
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }).start();
+    private void handleServerResponse() {
+        try {
+            String response = in.readLine();
+            JOptionPane.showMessageDialog(frame, response);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public static void main(String[] args) {
-        new Client();
+        SwingUtilities.invokeLater(Client::new);
     }
 }
