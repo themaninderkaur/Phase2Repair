@@ -102,6 +102,36 @@ public class Server implements Runnable {
         }
     }
 
+    private void handleClient(Socket clientSocket) {
+        try (BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+             PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true)) {
+
+            // Send a welcome message only once when the client connects
+            out.println("Welcome to the Social Media App!");
+
+            String command;
+            while ((command = in.readLine()) != null) {
+                if (command.equals("signup")) {
+                    // Handle signup
+                    String username = in.readLine();
+                    String password = in.readLine();
+                    String email = in.readLine();
+                    // Perform signup logic...
+                    out.println("Signup successful!"); // Send response back to client
+                } else if (command.equals("login")) {
+                    // Handle login
+                    String username = in.readLine();
+                    String password = in.readLine();
+                    // Perform login logic...
+                    out.println("Login successful!"); // Send response back to client
+                }
+                // Add more commands as needed
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     private synchronized User handleSignUp() {
         String correctUser;
         String correctPass;

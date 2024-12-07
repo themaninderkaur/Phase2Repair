@@ -11,6 +11,8 @@ public class Client {
     private Socket socket;
     private PrintWriter out;
     private BufferedReader in;
+    private JTextArea messageArea; // Area to display messages from the server
+    private JTextField inputField; // Field for user input
 
     public Client() {
         try {
@@ -35,20 +37,14 @@ public class Client {
         JButton loginButton = new JButton("Login");
         JButton signupButton = new JButton("Signup");
 
-        loginButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                showLoginPage();
-                frame.dispose();
-            }
+        loginButton.addActionListener(e -> {
+            showLoginPage();
+            frame.dispose();
         });
 
-        signupButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                showSignupPage();
-                frame.dispose();
-            }
+        signupButton.addActionListener(e -> {
+            showSignupPage();
+            frame.dispose();
         });
 
         panel.add(loginButton);
@@ -72,24 +68,21 @@ public class Client {
         JPasswordField passwordField = new JPasswordField();
         JButton loginButton = new JButton("Login");
 
-        loginButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String username = usernameField.getText();
-                String password = new String(passwordField.getPassword());
-                out.println("login");
-                out.println(username);
-                out.println(password);
-                try {
-                    String response = in.readLine();
-                    JOptionPane.showMessageDialog(frame, response);
-                    if (response.contains("successful")) {
-                        // Proceed to the main application
-                        // You can create a new frame for the main application here
-                    }
-                } catch (IOException ex) {
-                    ex.printStackTrace();
+        loginButton.addActionListener(e -> {
+            String username = usernameField.getText();
+            String password = new String(passwordField.getPassword());
+            out.println("login");
+            out.println(username);
+            out.println(password);
+            try {
+                String response = in.readLine();
+                JOptionPane.showMessageDialog(frame, response);
+                if (response.contains("successful")) {
+                    showMainApp();
+                    frame.dispose();
                 }
+            } catch (IOException ex) {
+                ex.printStackTrace();
             }
         });
 
@@ -119,26 +112,23 @@ public class Client {
         JTextField emailField = new JTextField();
         JButton signupButton = new JButton("Signup");
 
-        signupButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String username = usernameField.getText();
-                String password = new String(passwordField.getPassword());
-                String email = emailField.getText();
-                out.println("signup");
-                out.println(username);
-                out.println(password);
-                out.println(email);
-                try {
-                    String response = in.readLine();
-                    JOptionPane.showMessageDialog(frame, response);
-                    if (response.contains("successful")) {
-                        // Proceed to the main application
-                        // You can create a new frame for the main application here
-                    }
-                } catch (IOException ex) {
-                    ex.printStackTrace();
+        signupButton.addActionListener(e -> {
+            String username = usernameField.getText();
+            String password = new String(passwordField.getPassword());
+            String email = emailField.getText();
+            out.println("signup");
+            out.println(username);
+            out.println(password);
+            out.println(email);
+            try {
+                String response = in.readLine();
+                JOptionPane.showMessageDialog(frame, response);
+                if (response.contains("successful")) {
+                    showMainApp();
+                    frame.dispose();
                 }
+            } catch (IOException ex) {
+                ex.printStackTrace();
             }
         });
 
@@ -151,6 +141,45 @@ public class Client {
         panel.add(signupButton);
         frame.add(panel);
         frame.setVisible(true);
+    }
+
+    private void showMainApp() {
+        JFrame frame = new JFrame("Main Application");
+        frame.setSize(400, 400);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setLocationRelativeTo(null);
+
+        JPanel panel = new JPanel();
+        panel.setLayout(new BorderLayout());
+
+        messageArea = new JTextArea();
+        messageArea.setEditable(false);
+        JScrollPane scrollPane = new JScrollPane(messageArea);
+        panel.add(scrollPane, BorderLayout.CENTER);
+
+        inputField = new JTextField();
+        panel.add(inputField, BorderLayout.SOUTH);
+
+        inputField.addActionListener(e -> {
+            String message = inputField.getText();
+            out.println(message); // Send the message to the server
+            inputField.setText(""); // Clear the input field
+        });
+
+        frame.add(panel);
+        frame.setVisible(true);
+
+        // Start a thread to listen for messages from the server
+        new Thread(() -> {
+            String serverMessage;
+            try {
+                while ((serverMessage = in.readLine()) != null) {
+                    messageArea.append("Server: " + serverMessage + "\n");
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }).start();
     }
 
     public static void main(String[] args) {
