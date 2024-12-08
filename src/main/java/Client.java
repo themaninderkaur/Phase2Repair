@@ -1,6 +1,7 @@
-package src.main.java;
+///package src.main.java;
 
 import javax.swing.*;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -22,14 +23,22 @@ public class Client {
 
         textArea = new JTextArea();
         textArea.setEditable(false);
+        // Enable line wrapping
+        textArea.setLineWrap(true);
+
+        // Optionally, enable wrapping at word boundaries
+        textArea.setWrapStyleWord(true);
         JScrollPane scrollPane = new JScrollPane(textArea);
         frame.add(scrollPane, BorderLayout.CENTER);
 
-        inputField = new JTextField();
-        frame.add(inputField, BorderLayout.SOUTH);
+        JPanel inputSend = new JPanel();
+        inputSend.setLayout(new FlowLayout(FlowLayout.LEFT));
+        inputField = new JTextField(25);
 
         sendButton = new JButton("Send");
-        frame.add(sendButton, BorderLayout.EAST);
+        inputSend.add(inputField);
+        inputSend.add(sendButton);
+        frame.add(inputSend, BorderLayout.SOUTH);
 
         sendButton.addActionListener(new ActionListener() {
             @Override
