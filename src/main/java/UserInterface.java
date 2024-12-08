@@ -18,7 +18,6 @@ public interface UserInterface {
         System.out.println("\nUser Profile:");
         System.out.println("Username: " + user.getUsername());
         System.out.println("Email: " + user.getEmail());
-        System.out.println("Profile Picture URL: " + user.getProfilePictureUrl());
         System.out.println("Bio: " + user.getBio());
         System.out.println("Account Created At: " + user.getCreatedAt());
     }

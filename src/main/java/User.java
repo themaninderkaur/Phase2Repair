@@ -8,7 +8,6 @@ public class User implements UserInterface {
     private String username;
     private String password;
     private String email;
-    private String profilePictureUrl;
     private String bio;
     private Date createdAt;
     private boolean restriction;
@@ -16,12 +15,11 @@ public class User implements UserInterface {
     private ArrayList<String> userBlockedList;
     private ArrayList<String> userFriendsList;
 
-    public User(long userId, String username, String password, String email, String profilePictureUrl, String bio) {
+    public User(long userId, String username, String password, String email,  String bio) {
         this.userId = userId;
         this.username = username;
         this.password = password;
         this.email = email;
-        this.profilePictureUrl = profilePictureUrl;
         this.bio = bio;
         this.createdAt = new Date(); // Set to current date
         this.userBlockedList = new ArrayList<>();
@@ -42,7 +40,6 @@ public class User implements UserInterface {
     public String getUsername() { return username; }
     public String getPassword() { return password; }
     public String getEmail() { return email; }
-    public String getProfilePictureUrl() { return profilePictureUrl; }
     public String getBio() { return bio; }
     public Date getCreatedAt() { return createdAt; }
     public ArrayList<String> getBlockedList() { return userBlockedList; }

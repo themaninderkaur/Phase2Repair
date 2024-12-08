@@ -2,6 +2,9 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 
 public class MainPage extends JFrame {
@@ -13,7 +16,7 @@ public class MainPage extends JFrame {
     JPanel panel;
     
 
-    public MainPage(User user, ArrayList<String> userList) {
+    public MainPage(BufferedReader in, PrintWriter out) {
         panel = new JPanel();
         // Set up the frame
         setTitle("MESSAGING APP");
@@ -39,7 +42,7 @@ public class MainPage extends JFrame {
         users.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                userPage(user, userList);
+                userPage(in, out);
                 dispose();
             }
         });
@@ -53,14 +56,14 @@ public class MainPage extends JFrame {
         friends.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                friendsPage(user, userList);
+                friendsPage(in, out);
                 dispose();
             }
         });
         blocked.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                blockedPage(user, userList);
+                blockedPage(in, out);
                 dispose();
             }
         });
@@ -85,19 +88,38 @@ public class MainPage extends JFrame {
         
         JTextArea description = new JTextArea(5, 20);
         JScrollPane desc = new JScrollPane(description);
-        description.setText(user.getBio());
+        out.println("IN MAIN");
+        try {
+            description.setText(in.readLine());
+        } catch (IOException e1) {
+            JOptionPane.showMessageDialog(panel, "Description not working", "MESSAGING APP", JOptionPane.INFORMATION_MESSAGE);
+            e1.printStackTrace();
+        }
+        out.println("BIO DONE");
         description.setLineWrap(true); // Enable line wrapping
         description.setWrapStyleWord(true); // Wrap at word boundaries
 
         JTextArea name = new JTextArea();
-        name.setText(user.getUsername());
+        try {
+            name.setText(in.readLine());
+        } catch (IOException e1) {
+            JOptionPane.showMessageDialog(panel, "Name not working", "MESSAGING APP", JOptionPane.INFORMATION_MESSAGE);
+            e1.printStackTrace();
+        }
+        out.println("USER DONE");
 
         JPanel west = new JPanel();
 
         profile.add(name, BorderLayout.NORTH);
         profile.add(desc, BorderLayout.CENTER);
 
-        JTextArea email = new JTextArea(user.getEmail());
+        JTextArea email = new JTextArea();
+        try {
+            email.setText(in.readLine());
+        } catch (IOException e1) {
+            JOptionPane.showMessageDialog(panel, "Email not working", "MESSAGING APP", JOptionPane.INFORMATION_MESSAGE);
+            e1.printStackTrace();
+        }
         profile.add(email, BorderLayout.SOUTH);
 
         panel.add(profile, BorderLayout.CENTER);
@@ -111,26 +133,19 @@ public class MainPage extends JFrame {
 
     }
 
-    public void friendsPage(User user, ArrayList<String> userList) {
-        FriendsPage friendPage = new FriendsPage(user, userList);
+    public void friendsPage(BufferedReader in, PrintWriter out) {
+        FriendsPage friendPage = new FriendsPage(in, out);
     }
 
     public static void main(String[] args) {
-        User user = new User(0, "helloWorld", "hahahehehoho", "h@gmail.com", "why.jpg", "why");
-        User user2 = new User(1, "username02", "pass02", "email02", "profile.url","hihi");
-
-        ArrayList<String> userList = new ArrayList();
-        userList.add(user.getUsername());
-        userList.add(user2.getUsername());
-        MainPage main = new MainPage(user, userList);
     }
 
-    public void blockedPage(User user, ArrayList<String> userList) {
-        BlockedPage bp = new BlockedPage(user, userList);
+    public void blockedPage(BufferedReader in, PrintWriter out) {
+        BlockedPage bp = new BlockedPage(in, out);
     }
 
-    public void userPage(User user, ArrayList<String> userList) {
-        UsersPage up = new UsersPage(user, userList);
+    public void userPage(BufferedReader in, PrintWriter out) {
+        UsersPage up = new UsersPage(in, out);
     }
     
     

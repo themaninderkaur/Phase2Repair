@@ -4,9 +4,15 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.net.ServerSocket;
+import java.net.Socket;
 
 public class LandingPage extends JFrame {
-    public LandingPage() {
+    public LandingPage(BufferedReader in, PrintWriter out) {
         // Set up the frame
         setTitle("Social Media App");
         setSize(400, 300);
@@ -25,14 +31,14 @@ public class LandingPage extends JFrame {
         loginButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                openLoginPage();
+                openLoginPage(in, out);
             }
         });
 
         signupButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                openSignupPage();
+                openSignupPage(in, out);
             }
         });
 
@@ -44,24 +50,34 @@ public class LandingPage extends JFrame {
         add(panel);
     }
 
-    private void openLoginPage() {
+    private void openLoginPage(BufferedReader in, PrintWriter out) {
         // Create and show the login page
-        LoginPage loginPage = new LoginPage();
+        LoginPage loginPage = new LoginPage(in, out);
         loginPage.setVisible(true);
+        out.println("LOGIN");
         this.dispose(); // Close the landing page
     }
 
-    private void openSignupPage() {
+    private void openSignupPage(BufferedReader in, PrintWriter out) {
         // Create and show the signup page
-        SignupPage signupPage = new SignupPage();
+        SignupPage signupPage = new SignupPage(in, out);
         signupPage.setVisible(true);
+        out.println("SIGNUP");
         this.dispose(); // Close the landing page
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            LandingPage landingPage = new LandingPage();
-            landingPage.setVisible(true);
-        });
+
+
+        try {
+            Socket socket = new Socket("localhost", 4343);
+            BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+            LandingPage lp = new LandingPage(in, out);
+            lp.setVisible(true);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

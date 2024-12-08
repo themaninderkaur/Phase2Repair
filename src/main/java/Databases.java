@@ -22,7 +22,7 @@ public class Databases {
         int userIndex = findUserIndexById(userId);
         int friendIndex = findUserIndexById(friendId);
         if (userIndex >= 0 && friendIndex >= 0) {
-            User newFriend = new User(userId, friendId+"", "accepted", null, null,null);
+            User newFriend = new User(userId, friendId+"", "accepted", null,null);
             friends.get(userIndex).add(newFriend);
             users.get(userIndex).addFriend(users.get(friendIndex).getUsername());
         }
@@ -33,7 +33,7 @@ public class Databases {
         int senderIndex = findUserIndexById(senderId);
         int receiverIndex = findUserIndexById(receiverId);
         if (senderIndex >= 0 && receiverIndex >= 0) {
-            User newMessage = new User(messages.size() + 1, senderId +"", receiverId + "", content, photoUrl, bio);
+            User newMessage = new User(messages.size() + 1, senderId +"", receiverId + "", content, bio);
             messages.get(senderIndex).add(newMessage);
             messages.get(receiverIndex).add(newMessage); // Optionally, store it in both lists
         }
