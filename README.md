@@ -6,7 +6,7 @@ In order to compile the project, you need to type javac into the terminal follow
 ## Contributions
 Maninder - entire database.java and the test cases. Worked on the blcokedUser methods and assisted in the server creation
 
-Emily - created User.java and Friends, directMessage methods for the interface. Also did the signup and login in server.
+Emily - Contributed to User.java & UserInterface.java. Fixed and provided more security for login & signup methods. Set up & fixed the basics of server/client when it came to home, signup & login methods. Worked on GUI, added BLOCKED implementations for direct messages, and help code blocked & friend methods. Coded basic user methods when it came to viewing all users, finding users & checking user profiles.
 
 Justin - Created the interfaces for User.java
 
